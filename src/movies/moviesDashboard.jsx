@@ -4,27 +4,29 @@ import Like from './common/like';
 import Pagination from './common/pagination'
 import { paginate } from '../utils/paginate';
 import ListGroup from './common/listGroup';
+import MoviesTable from './movies';
 // import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
 
 // import { getGenres,getMovies } from '../services/fakeGenreService';
 import { getMovies,deleteMovie } from '../services/fakeMovieService';
-import { genres, getGenres } from '../services/fakeGenreService';
+import {  getGenres } from '../services/fakeGenreService';
 
 class MoviesDashboard extends Component {
     state = { 
         movies: [],
         genres: [],
-        pageSize: 4,
+        pageSize: 7,
         currentPage: 1,
-        currentGenre: "allGenres",
+        selectedGenre: {},
         active: 1
     }
     componentDidMount() {
+        const genres = [{"name": "All Genres"},...getGenres()]
         this.setState(
             {
                 movies: getMovies(),
-                genres: getGenres()
+                genres: genres
             }
         )
     }
@@ -46,53 +48,36 @@ class MoviesDashboard extends Component {
         this.setState({currentPage: page})
     }
     handleGenreSelect = (genre) => {
-        console.log(genre.name)
         this.setState(
-            { currentGenre: genre.name}
+            { selectedGenre: genre, currentPage: 1}
         )
+        console.log(genre)
     }
     render() { 
         const {length: count} = this.state.movies
-        const { movies: allMovies, pageSize, currentPage } = this.state
-        const {genres: allGenres, currentGenre} = this.state
-        const movies = paginate(allMovies,currentPage,pageSize)
+        const { movies: allMovies, pageSize, currentPage, selectedGenre } = this.state
+        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter((movie) => movie.genre._id === selectedGenre._id) : allMovies
+        const movies = paginate(filtered,currentPage,pageSize)
         return (
             <div className='row'>
                 <div className="col-2">
-                    <ListGroup items={this.state.genres} currentGenre={this.state.currentGenre} onSelectGenre={this.handleGenreSelect}></ListGroup>
+                    <ListGroup 
+                    items={this.state.genres} 
+                    currentGenre={selectedGenre} 
+                    onSelectGenre={this.handleGenreSelect}></ListGroup>
                 </div>
                 <div className="col">
                     <p1>Showing {count} movies from the database</p1>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                            {/* <th scope="col">#</th> */}
-                            <th scope="col">Title</th>
-                            <th scope="col">Genre</th>
-                            <th scope="col">InStock</th>
-                            <th scope="col">RentalRate</th>
-                            <th scope="col"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { movies.map( movie => (
-                                <tr key={movie._id}>
-                                    {/* <th scope="row">{movie._id}</th> */}
-                                    <td>{movie.title}</td>
-                                    <td>{movie.genre.name}</td>
-                                    <td>{movie.numberInStock}</td>
-                                    <td>{movie.dailyRentalRate}</td>
-                                    <td><Like liked={movie.liked} onClick={() => this.handleLike(movie)}/></td>
-                                    <td><button onClick={() => this.handleDelete(movie)  } className="btn btn-danger btn-sm">Delete</button></td>
-                                </tr>))}
-
-                        </tbody>
-                    </table>
+                    <MoviesTable
+                    movies={movies}
+                    onLike={this.handleLike}
+                    onDelete={this.handleDelete}
+                    ></MoviesTable>
                     <Pagination 
-                    itemsCount={count} 
-                    pageSize={this.state.pageSize} 
+                    itemsCount={filtered.length} 
+                    pageSize={pageSize} 
                     onPageChange={this.handlePageChange} 
-                    currentPage={this.state.currentPage} 
+                    currentPage={currentPage} 
                     />
                 </div>
             </div>
