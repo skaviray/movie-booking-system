@@ -4,6 +4,7 @@ import MoviesDashboard from './movies/moviesDashboard';
 import Sidebar from './front-end-components/sidebar';
 import NavBar from './components/navbar';
 import Counters from './components/Counters';
+import ListGroup from './movies/common/listGroup';
 
 import React, { Component } from 'react';
 
@@ -60,6 +61,7 @@ class App extends Component {
       // </main>
       // </React.Fragment>
       <MoviesDashboard></MoviesDashboard>
+      // <ListGroup></ListGroup>
     );
   }
 }

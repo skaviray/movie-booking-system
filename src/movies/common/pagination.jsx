@@ -1,5 +1,7 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import _ from 'lodash'
+import { propTypes } from 'react-bootstrap/esm/Image'
 const Pagination = (props) => {
     const { itemsCount, pageSize,onPageChange, currentPage } = props
     console.log(currentPage)
@@ -12,14 +14,16 @@ const Pagination = (props) => {
             {
                 pages.map(page => <li key={page} className={ page === currentPage ? "page-item active" : "page-item"}><a className="page-link" onClick={() => onPageChange(page)} style={{cursor: "pointer"}}>{page}</a></li>)
             }
-            
-            {/* <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Next</a></li> */}
         </ul>
         </nav>
      );
 }
+
+Pagination.propTypes = {
+    temsCount: PropTypes.number.isRequired, 
+    pageSize: PropTypes.number.isRequired,
+    onPageChange: PropTypes.func.isRequired, 
+    currentPage: PropTypes.number.isRequired
+};
  
 export default Pagination;
