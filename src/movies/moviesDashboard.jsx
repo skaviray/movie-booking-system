@@ -11,6 +11,7 @@ import MoviesTable from './movies';
 // import { getGenres,getMovies } from '../services/fakeGenreService';
 import { getMovies,deleteMovie } from '../services/fakeMovieService';
 import {  getGenres } from '../services/fakeGenreService';
+import _ from "lodash";
 
 class MoviesDashboard extends Component {
     state = { 
@@ -18,7 +19,8 @@ class MoviesDashboard extends Component {
         genres: [],
         pageSize: 7,
         currentPage: 1,
-        selectedGenre: {},
+        selectedGenre: {"name": "All Genres"},
+        sortColumn: {path: 'title', order: 'asc'},
         active: 1
     }
     componentDidMount() {
@@ -31,10 +33,8 @@ class MoviesDashboard extends Component {
         )
     }
     handleDelete = (movie) => {
-        console.log("deleting movie", movie._id)
         const movies = this.state.movies.filter((item) => item._id !== movie._id)
         this.setState({movies: movies})
-        console.log(deleteMovie(movie._id))
     }
     handleLike = (movie) => {
         console.log("Like Clicked", movie)
@@ -51,13 +51,17 @@ class MoviesDashboard extends Component {
         this.setState(
             { selectedGenre: genre, currentPage: 1}
         )
-        console.log(genre)
+        // console.log(genre)
+    }
+    handleOnSort = (sortColumn) => {
+        this.setState({sortColumn: sortColumn})
     }
     render() { 
         const {length: count} = this.state.movies
-        const { movies: allMovies, pageSize, currentPage, selectedGenre } = this.state
+        const { movies: allMovies, pageSize, currentPage, selectedGenre,sortColumn } = this.state
         const filtered = selectedGenre && selectedGenre._id ? allMovies.filter((movie) => movie.genre._id === selectedGenre._id) : allMovies
-        const movies = paginate(filtered,currentPage,pageSize)
+        const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order])
+        const movies = paginate(sorted,currentPage,pageSize)
         return (
             <div className='row'>
                 <div className="col-2">
@@ -70,8 +74,10 @@ class MoviesDashboard extends Component {
                     <p1>Showing {count} movies from the database</p1>
                     <MoviesTable
                     movies={movies}
+                    sortColumn={this.sortColumn}
                     onLike={this.handleLike}
                     onDelete={this.handleDelete}
+                    onSort={this.handleOnSort}
                     ></MoviesTable>
                     <Pagination 
                     itemsCount={filtered.length} 
