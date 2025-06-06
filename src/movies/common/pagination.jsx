@@ -4,7 +4,7 @@ import _ from 'lodash'
 // import { propTypes } from 'react-bootstrap/esm/Image'
 const Pagination = (props) => {
     const { itemsCount, pageSize,onPageChange, currentPage } = props
-    console.log(currentPage)
+    // console.log(currentPage)
     const pageCount = Math.ceil(itemsCount / pageSize)
     const pages = _.range(1, pageCount + 1)
     if (pageCount === 1) return null
