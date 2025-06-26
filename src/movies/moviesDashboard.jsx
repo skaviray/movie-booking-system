@@ -89,7 +89,7 @@ class MoviesDashboard extends Component {
                     onDelete={this.handleDelete}
                     onSort={this.handleOnSort}
                     ></MoviesTable>
-                    <Pagination 
+                    <Pagination className="pagination"
                     itemsCount={totalCount} 
                     pageSize={pageSize} 
                     onPageChange={this.handlePageChange} 

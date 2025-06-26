@@ -22,7 +22,7 @@ class  TableHeader extends Component {
     render() { 
         const {columns} = this.props
         return (
-            <thead>
+            <thead className='thead-dark'>
                 <tr className='clickable'>
                     { columns.map(column => 
                     <th 

@@ -10,6 +10,7 @@ import 'font-awesome/css/font-awesome.css'
 import Counters from './components/Counters';
 import Sidebar from './front-end-components/sidebar';
 import Pannel from './front-end-components/pannels';
+import { BrowserRouter } from 'react-router-dom';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -17,7 +18,9 @@ root.render(
   // <Pannel/>
   // <Counters/>
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 
 );
