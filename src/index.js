@@ -6,12 +6,8 @@ import reportWebVitals from './reportWebVitals';
 // import Counter from './components/counterComponent';
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
-
-import Counters from './components/Counters';
-import Sidebar from './front-end-components/sidebar';
-import Pannel from './front-end-components/pannels';
 import { BrowserRouter } from 'react-router-dom';
-
+// import 'bootstrap/dist/css/bootstrap.min.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
