@@ -14,7 +14,6 @@ export default function Input({ name, label, value, type, errors, onChange}) {
         className="form-control" 
         id={name} 
         aria-describedby="emailHelp" />
-
     {errors[name] ? <div className="alert alert-danger" role="alert">{errors[name]}</div>: null}
     </div>
   )

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
 
+
 export default function LoginForm() {
     const [account, setAccount] = useState({
         "username": "",
@@ -15,7 +16,7 @@ export default function LoginForm() {
     }
     const validate = () => {
       const result = Joi.validate(account, schema, {abortEarly: false})
-      if (!result.error) return {}
+      if (!result.error) return null
       const validationErrors = {}
       for (let item of result.error.details)
         validationErrors[item.path[0]] = item.message
@@ -34,10 +35,15 @@ export default function LoginForm() {
     const handleSubmit = e => {
         e.preventDefault()
         const validationErrors = validate()
-        setErrors(validationErrors)
-        console.log("Submitted")
+        setErrors(validationErrors || {})
+        doSubmit()
 
     }
+
+    const doSubmit = () => {
+      console.log("Submitted")
+    }
+
     const handleChange = e => {
     const { name, value } = e.target
     const errorMessage = validateInputs(e.target)
@@ -60,7 +66,7 @@ export default function LoginForm() {
         <form onSubmit={handleSubmit}>
             <Input name="username" label="Username" value={account.username} type="text" errors={errors} onChange={handleChange} />
             <Input name="password" label="Password" value={account.password} type="password" errors={errors} onChange={handleChange} />
-            <button className="btn btn-primary">Login</button>
+            <button className="btn btn-primary" disabled={validate()}>Login</button>
         </form>
     </div>
   )

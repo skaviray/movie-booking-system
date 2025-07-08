@@ -77,14 +77,17 @@ export function getMovie(id) {
 }
 
 export function saveMovie(movie) {
-  let movieInDb = movies.find(m => m._id === movie._id) || {};
-  movieInDb.name = movie.name;
-  movieInDb.genre = genresAPI.genres.find(g => g._id === movie.genreId);
+    console.log(movie)
+  let movieInDb = movies.find(m => m._id === movie._id) || {}
+  // let movieInDb = movie._id ? movies.find(m => m._id === movie._id) || {} : {};
+  console.log(movieInDb)
+  movieInDb.title = movie.title;
+  movieInDb.genre = genresAPI.genres.find(g => g.name.toLowerCase() === movie.genre);
   movieInDb.numberInStock = movie.numberInStock;
-  movieInDb.dailyRentalRate = movie.dailyRentalRate;
+  movieInDb.dailyRentalRate = movie.rent;
 
   if (!movieInDb._id) {
-    movieInDb._id = Date.now();
+    movieInDb._id = Date.now().toString();
     movies.push(movieInDb);
   }
 

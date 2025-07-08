@@ -5,6 +5,7 @@ import Pagination from './common/pagination'
 import { paginate } from '../utils/paginate';
 import ListGroup from './common/listGroup';
 import MoviesTable from './movies';
+import withNavigation from './withNavigation';
 // import { faHeart } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -21,6 +22,7 @@ class MoviesDashboard extends Component {
         currentPage: 1,
         selectedGenre: {"name": "All Genres"},
         sortColumn: {path: 'title', order: 'asc'},
+        searchString: "",
         active: 1
     }
     componentDidMount() {
@@ -59,11 +61,30 @@ class MoviesDashboard extends Component {
     }
     getPagedData = () => {
         const { movies: allMovies, pageSize, currentPage, selectedGenre,sortColumn } = this.state
-        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter((movie) => movie.genre._id === selectedGenre._id) : allMovies
+        let filtered = allMovies
+        if (this.state.searchString) {
+            filtered = allMovies.filter((movie) =>
+            movie.title.toLowerCase().includes(this.state.searchString.toLowerCase())
+            )
+        }
+        else if (selectedGenre && selectedGenre._id){
+            const filtered =  allMovies.filter((movie) => movie.genre._id === selectedGenre._id)
+        }
         const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order])
         const movies = paginate(sorted,currentPage,pageSize)
         return {totalCount: filtered.length, data: movies}
 
+    }
+    handleNewMovie = () => {
+        console.log("Adding new Movie")
+        // console.log(this.props.navigate)
+        this.props.navigate("/movies/new")
+    }
+    handleSearch = e => {
+        console.log("searching")
+       const {name, value} = e.target
+        this.setState({ searchString: value})
+       console.log(value)
     }
     render() { 
         const {length: count} = this.state.movies
@@ -81,7 +102,17 @@ class MoviesDashboard extends Component {
                     onSelectGenre={this.handleGenreSelect}></ListGroup>
                 </div>
                 <div className="col">
+                    <button onClick={this.handleNewMovie} className="btn btn-primary btn-sm">New Movie</button>
                     <p>Showing {data.length} movies from the database</p>
+                    {/* <label for="exampleFormControlInput1" className="form-label">Search</label> */}
+                    <input 
+                    autoFocus
+                    type="text" 
+                    className="form-control mb-3" 
+                    placeholder="Search Movies ..." 
+                    // name='search' 
+                    value={this.state.searchString} 
+                    onChange={this.handleSearch}/>
                     <MoviesTable
                     movies={data}
                     sortColumn={sortColumn}
@@ -101,4 +132,6 @@ class MoviesDashboard extends Component {
     }
 }
  
-export default MoviesDashboard;
+// export default MoviesDashboard;
+
+export default withNavigation(MoviesDashboard)

@@ -1,5 +1,6 @@
 import React from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Navigate, useNavigate, useParams } from 'react-router'
+import { getMovies } from '../services/fakeMovieService'
 
 export default function MoviesDetails() {
     const navigate = useNavigate()
@@ -7,6 +8,13 @@ export default function MoviesDetails() {
     const handleSave = () => {
       navigate("/movies")
     }
+    console.log(id)
+    console.log(getMovies())
+    const movie = getMovies().find(m => m._id === id)
+    console.log(movie)
+    if (!movie) {
+    return <Navigate to="/not-found" />
+  }
   return (
     <div>
       <h1>Movie Form {id}</h1>
