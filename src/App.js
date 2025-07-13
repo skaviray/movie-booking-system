@@ -15,6 +15,7 @@ import LoginForm from './movies/loginForm';
 import NotFound from './movies/notFound';
 import RegisterForm from './movies/registerForm';
 import MovieForm from './movies/movieForm';
+import { ToastContainer } from 'react-toastify';
 
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'font-awesome/css/font-awesome.css';
@@ -23,6 +24,7 @@ class App extends Component {
   render() { 
     return (
        <React.Fragment>
+       <ToastContainer />
         <NavBar/>
         <main className="container">
           <Routes>

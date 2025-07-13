@@ -11,9 +11,9 @@ class MoviesTable extends Component {
         const {movies, onLike, onDelete, onSort, sortColumn } = this.props
         const columns = [
             {path: "title", label: "Title"},
-            {path: "genre.name", label: "Genre"},
-            {path: "numberInStock", label: "InStock"},
-            {path: "dailyRentalRate", label: "RentalRate"},
+            {path: "genre_id", label: "Genre"},
+            {path: "number_in_stock", label: "InStock"},
+            {path: "daily_rental_rate", label: "RentalRate"},
             {key: "like", content: movie => <Like liked={movie.liked} onClick={() => onLike(movie)}/>},
             {key: "action", content: movie => <button onClick={() => onDelete(movie)  } className="btn btn-danger btn-sm">Delete</button>}
 

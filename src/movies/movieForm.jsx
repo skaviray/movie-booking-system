@@ -1,21 +1,37 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Joi, { schema }  from 'joi-browser'
 import Input from './common/input'
-import { getGenres } from '../services/fakeGenreService'
+// import { getGenres } from '../services/fakeGenreService'
+import { fetchGenres } from '../services/genreService'
 import Select from './common/select'
 import { useNavigate } from 'react-router'
 import { saveMovie } from '../services/fakeMovieService'
+import { addMovie } from '../services/movieService'
+import { toast } from 'react-toastify'
 export default function  MovieForm() {
-    const genres = getGenres()
-    const navigate = useNavigate()
     const [data, setData] = useState({
         "title": "",
         "genre": "",
         "numberInStock": "",
         "rent": ""
     })
-    const genreList  = genres.map(item => item.name.toLocaleLowerCase())
+    const [loading, setLoading] = useState(true)
+    const [genres, setGenres] = useState([])
     const [errors, setErrors] = useState({})
+    // const genres = getGenres()
+    const navigate = useNavigate()
+    useEffect(() => {
+      const loadGenres = async () => {
+        const fetchedGenres = await fetchGenres()
+        setGenres(fetchedGenres)
+        setLoading(false)
+      }
+      loadGenres()
+
+    }, [])
+    if (loading) return <div>Loading...</div>
+    const genreList  = genres.map(item => item.name.toLocaleLowerCase())
+
     schema = {
       title: Joi.string().required().label("Title"),
       genre: Joi.string().valid(genreList).required().label("Genre"),
@@ -46,14 +62,30 @@ export default function  MovieForm() {
         const validationErrors = validate()
         setErrors(validationErrors || {})
         doSubmit()
-
     }
 
-    const doSubmit = () => {
+    const doSubmit =  async () => {
+      try {
       console.log("Submitted")
-      saveMovie(data)
-      console.log()
+      const genre = genres.find(g => g.name.toLowerCase() === data.genre)
+      console.log(genre)
+      const movie = {
+        title: data.title,
+        genre_id: genre.id,
+        number_in_stock: Number(data.numberInStock),
+        daily_rental_rate: Number(data.rent)
+      }
+      console.log(movie)
+      await addMovie(movie)
       navigate("/movies")
+      }catch (ex) {
+        if (ex.response && ex.response.status === 400){
+          toast.error(ex.message)
+        }
+        else {
+          toast.error("Unexpected error occured..")
+        }
+      }
     }
 
     const handleChange = e => {
@@ -76,7 +108,7 @@ export default function  MovieForm() {
     <div>
         <h1>Movies Form</h1>
         <form onSubmit={handleSubmit}>
-            <Input name="title" label="Username" value={data.username} type="text" errors={errors} onChange={handleChange} />
+            <Input name="title" label="Tittle" value={data.username} type="text" errors={errors} onChange={handleChange} />
             <Select name="genre"  label="Genre" value={data.genre} items={genres} errors={errors} onChange={handleChange} />
             <Input name="numberInStock" label="Number in Stock" value={data.numberInStock} type="text" errors={errors} onChange={handleChange} />
             <Input name="rent" label="Rate" value={data.rent} type="text" errors={errors} onChange={handleChange} />

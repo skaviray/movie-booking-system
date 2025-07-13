@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Like from './common/like';
 import Pagination from './common/pagination'
 import { paginate } from '../utils/paginate';
 import ListGroup from './common/listGroup';
@@ -10,9 +9,12 @@ import withNavigation from './withNavigation';
 
 
 // import { getGenres,getMovies } from '../services/fakeGenreService';
-import { getMovies,deleteMovie } from '../services/fakeMovieService';
-import {  getGenres } from '../services/fakeGenreService';
+// import { getMovies,deleteMovie } from '../services/fakeMovieService';
+// import {  getGenres } from '../services/fakeGenreService';
+import { fetchGenres } from '../services/genreService';
+import { fetchMovies,deleteMovie } from '../services/movieService';
 import _ from "lodash";
+import { toast } from 'react-toastify';
 
 class MoviesDashboard extends Component {
     state = { 
@@ -25,18 +27,41 @@ class MoviesDashboard extends Component {
         searchString: "",
         active: 1
     }
-    componentDidMount() {
-        const genres = [{"name": "All Genres"},...getGenres()]
-        this.setState(
-            {
-                movies: getMovies(),
-                genres: genres
+    async componentDidMount() {
+        try {
+            const genres = [{"name": "All Genres"},... await fetchGenres()]
+            const movies = await fetchMovies()
+            this.setState(
+                {
+                    movies: movies,
+                    genres: genres
+                }
+            )
+            
+        } catch (ex) {
+            if (ex.response && ex.response.status === 404) {
+                toast.error(`/auth/genres endpoint doesn't exist`)
             }
-        )
+            this.setState(
+                {
+                    movies: [],
+                    genres: []
+                }
+            )
+        }
     }
-    handleDelete = (movie) => {
-        const movies = this.state.movies.filter((item) => item._id !== movie._id)
-        this.setState({movies: movies})
+    handleDelete =  async (movie) => {
+        const originalMovies = this.state.movies
+        const updatedMovies = originalMovies.filter(m => m.id !== movie.id)
+        this.setState({movies: updatedMovies})
+        // const index = originalMovies.indexOf(deleteMovie)
+        try{
+            await deleteMovie(movie)
+        } catch (ex){
+            toast.error("Unexpected error occured...")
+            this.setState({movies: originalMovies})
+        }
+        // const movies = this.state.movies.filter((item) => item._id !== movie._id)
     }
     handleLike = (movie) => {
         console.log("Like Clicked", movie)
@@ -89,9 +114,6 @@ class MoviesDashboard extends Component {
     render() { 
         const {length: count} = this.state.movies
         const { movies: allMovies, pageSize, currentPage, selectedGenre,sortColumn } = this.state
-        // const filtered = selectedGenre && selectedGenre._id ? allMovies.filter((movie) => movie.genre._id === selectedGenre._id) : allMovies
-        // const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order])
-        // const movies = paginate(sorted,currentPage,pageSize)
         const {totalCount,data} = this.getPagedData()
         return (
             <div className='row'>

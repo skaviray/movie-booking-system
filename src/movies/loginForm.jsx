@@ -1,17 +1,21 @@
 import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
+import { loginUser } from '../services/auth'
+import { useNavigate } from 'react-router'
 
 
 export default function LoginForm() {
+    const navigate = useNavigate()
     const [account, setAccount] = useState({
-        "username": "",
+        "email": "",
         "password": ""
     })
+    // const [accessToken, setAccessToken] = useState("")
 
     const [errors, setErrors] = useState({})
     schema = {
-      username: Joi.string().required().label("Username"),
+      email: Joi.string().email().required().label("Username"),
       password: Joi.string().required().label("Password"),
     }
     const validate = () => {
@@ -32,16 +36,23 @@ export default function LoginForm() {
       return error ? error.details[0].message : null
 
     }
-    const handleSubmit = e => {
+    const handleSubmit = async e => {
         e.preventDefault()
         const validationErrors = validate()
         setErrors(validationErrors || {})
-        doSubmit()
-
-    }
-
-    const doSubmit = () => {
-      console.log("Submitted")
+        try {
+          const response = await loginUser(account)
+          // console.log(response)
+          // setAccessToken(response.access_token)
+          localStorage.setItem("access_token", response.access_token)
+          console.log(localStorage.getItem("access_token"))
+          navigate("/")
+        } catch(ex) {
+          if (ex.response && (ex.response.status === 400 || ex.response.status === 401)){
+            // setErrors({username: `user ${account.username} does not exist, please register...`})
+            setErrors({email: ex.response.data.error})
+          } 
+      }
     }
 
     const handleChange = e => {
@@ -64,7 +75,7 @@ export default function LoginForm() {
     <div>
         <h1>Login</h1>
         <form onSubmit={handleSubmit}>
-            <Input name="username" label="Username" value={account.username} type="text" errors={errors} onChange={handleChange} />
+            <Input name="email" label="Email" value={account.email} type="text" errors={errors} onChange={handleChange} />
             <Input name="password" label="Password" value={account.password} type="password" errors={errors} onChange={handleChange} />
             <button className="btn btn-primary" disabled={validate()}>Login</button>
         </form>
