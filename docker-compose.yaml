@@ -1,0 +1,34 @@
+version: "3.9"
+# TODO
+# 1. Modify the docker compose file to bring up all the services
+services:
+  vividly-db:
+    image: postgres:14-alpine
+    ports:
+      - 5434:5432
+    volumes:
+      - ~/vividly/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=root
+      - POSTGRES_DB=vividly
+  vividly-backend:
+    image: postgres:14-alpine
+    ports:
+      - 5434:5432
+    volumes:
+      - ~/vividly/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=root
+      - POSTGRES_DB=vividly
+  vividly-frontend:
+    image: postgres:14-alpine
+    ports:
+      - 5434:5432
+    volumes:
+      - ~/vividly/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=root
+      - POSTGRES_DB=vividly
