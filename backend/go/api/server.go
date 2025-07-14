@@ -62,7 +62,7 @@ func (server *Server) setupRouter() {
 		authRoutes.GET("/userinfo", server.GetUserInfo)
 	}
 
-	protected := router.Group("/").Use(server.authMiddleware())
+	protected := router.Group("/").Use(server.authMiddleware(), server.isAdmin())
 	// protected.GET("/", server.GetUser)
 	protected.POST("/users", server.CreateUser)
 	protected.GET("/users/:id", server.GetUser)

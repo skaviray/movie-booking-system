@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"vividly-backend/token"
 	"vividly-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -56,34 +57,22 @@ func (server *Server) authMiddleware() gin.HandlerFunc {
 
 func (server *Server) isAdmin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Println("Middleware")
-		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
-		if len(authorizationHeader) == 0 {
-			fmt.Println("error")
-			err := errors.New("authorization header is not provided")
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse(err))
+		fmt.Println("Authorisation middleware")
+		authorizationPayload, exists := ctx.Get(authorizationPayloadKey)
+		if !exists {
+			ctx.JSON(http.StatusForbidden, utils.ErrorResponse(errors.New("unable to find the the user information")))
 			return
 		}
-		fields := strings.Fields(authorizationHeader)
-		if len(fields) < 2 {
-			err := errors.New("invalid header format")
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse(err))
+		payload, ok := authorizationPayload.(*token.Payload)
+		if !ok {
+			ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(errors.New("unable to get the payload")))
 			return
 		}
-
-		authorizationtype := strings.ToLower(fields[0])
-
-		if authorizationtype != authorizationTypeBearer {
-			err := errors.New("authorization type is not supported")
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse(err))
+		fmt.Println(!payload.IsAdmin)
+		if !payload.IsAdmin {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, utils.ErrorResponse(errors.New("you should have admin privilleges to access this resource")))
 			return
 		}
-		payload, err := server.tokenMaker.VerifyToken(fields[1])
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse(err))
-			return
-		}
-		ctx.Set(authorizationPayloadKey, payload)
 		ctx.Next()
 	}
 }
