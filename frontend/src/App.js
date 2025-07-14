@@ -16,19 +16,31 @@ import NotFound from './movies/notFound';
 import RegisterForm from './movies/registerForm';
 import MovieForm from './movies/movieForm';
 import { ToastContainer } from 'react-toastify';
+import Profile from './movies/profile';
+import Logout from './movies/logout';
+import auth from './services/auth';
 
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'font-awesome/css/font-awesome.css';
 
 class App extends Component {
+  state = {}
+  async componentDidMount() { 
+    const user = await auth.getCurrentUser()
+    this.setState({user}, () => {
+      console.log(this.state)
+    })
+   }
   render() { 
     return (
        <React.Fragment>
        <ToastContainer />
-        <NavBar/>
+        <NavBar user={this.state.user}/>
         <main className="container">
           <Routes>
             <Route path="/login" element={<LoginForm/>} />
+            <Route path="/logout" element={<Logout/>} />
+            <Route path='/profile' element={<Profile user={this.state.user}/>} />
             <Route path="/register" element={<RegisterForm/>} />
             <Route path='/movies' element={<MoviesDashboard/>}/>
             <Route path='/movies/new' element={<MovieForm/>}/>

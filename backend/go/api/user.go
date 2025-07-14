@@ -111,7 +111,8 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	ctx.Header("Access-Control-Expose-Headers", "X-Auth-Token")
+	ctx.Header("X-Auth-Token", token)
 	ctx.JSON(http.StatusOK, gin.H{"access_token": token})
 }
 
@@ -206,4 +207,38 @@ func (server *Server) DeleteUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "user deleted"})
+}
+
+// type UserInfo struct {
+// }
+
+// type userInfoResponse struct {
+// 	User UserInfo `json:"user"`
+// }
+
+func (server *Server) GetUserInfo(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid token"})
+		return
+	}
+	token := authHeader[7:]
+	payload, err := server.tokenMaker.VerifyToken(token)
+	// payload, err := tokenMaker.VerifyToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// Send user info back
+	// c.JSON(http.StatusOK, gin.H{"user": gin.H{
+	// 	"username": payload.Username,
+	// 	"user_id":  payload.UserID,
+	// 	"is_admin": payload.IsAdmin,
+	// }})
+	c.JSON(http.StatusOK, gin.H{
+		"username": payload.Username,
+		"user_id":  payload.UserID,
+		"is_admin": payload.IsAdmin,
+	})
 }

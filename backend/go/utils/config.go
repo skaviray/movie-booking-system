@@ -12,6 +12,7 @@ type Config struct {
 	ListenAddress string        `mapstructure:"LISTEN_ADDRESS"`
 	SecretKey     string        `mapstructure:"SECRET_KEY"`
 	Duration      time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RequireAuth   bool          `mapstructure:"REQUIRE_AUTH"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

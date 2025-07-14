@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
-import { loginUser } from '../services/auth'
+import auth from '../services/auth'
 import { useNavigate } from 'react-router'
 
 
@@ -41,12 +41,13 @@ export default function LoginForm() {
         const validationErrors = validate()
         setErrors(validationErrors || {})
         try {
-          const response = await loginUser(account)
+          const {data: response, headers} = await auth.loginUser(account)
           // console.log(response)
           // setAccessToken(response.access_token)
-          localStorage.setItem("access_token", response.access_token)
-          console.log(localStorage.getItem("access_token"))
-          navigate("/")
+          // console.log(response,headers)
+          // localStorage.setItem("x-auth-token", headers['x-auth-token'])
+
+          window.location = "/"
         } catch(ex) {
           if (ex.response && (ex.response.status === 400 || ex.response.status === 401)){
             // setErrors({username: `user ${account.username} does not exist, please register...`})

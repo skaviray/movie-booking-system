@@ -59,10 +59,10 @@ func (server *Server) setupRouter() {
 		authRoutes.GET("/genres", server.ListGenres)
 		authRoutes.GET("/genres/:id", server.GetGenre)
 		authRoutes.POST("/users", server.CreateUser)
-
+		authRoutes.GET("/userinfo", server.GetUserInfo)
 	}
 
-	protected := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	protected := router.Group("/").Use(server.authMiddleware())
 	// protected.GET("/", server.GetUser)
 	protected.POST("/users", server.CreateUser)
 	protected.GET("/users/:id", server.GetUser)
@@ -76,7 +76,8 @@ func (server *Server) setupRouter() {
 	protected.PATCH("/customers", server.UpdateCustomer)
 	protected.DELETE("/customers/:id", server.DeleteCustomer)
 	// Movies Routes
-	authRoutes.PATCH("/movies", server.UpdateMovie)
+	protected.PUT("/movies/:id", server.UpdateMovie)
+	protected.PATCH("/movies", server.UpdateMovie)
 	// protected.DELETE("/movies/:id", server.DeleteMovie)
 	// Genres Routess
 	protected.POST("/genres", server.CreateGenre)

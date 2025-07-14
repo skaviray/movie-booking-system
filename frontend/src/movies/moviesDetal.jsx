@@ -12,13 +12,12 @@ export default function MoviesDetails() {
       try {
       movie.title = "UPDATED"
       movie = await updateMovie(movie)
+      navigate("/movies")
       } catch(ex) {
         if (ex.response && ex.response.status === 404) {
           alert("resource not found..")
         }
       }
-
-      navigate("/movies")
     }
     useEffect(() => {
         const loadMovies = async () =>  {
