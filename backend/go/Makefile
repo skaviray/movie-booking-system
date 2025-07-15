@@ -2,6 +2,12 @@
 postgres-setup:
 	docker-compose up -d
 
+create-container-image:
+	docker build -t vidly-backend .
+
+remove-image:
+	docker rmi  vidly-backend
+
 postgres-start:
 	docker-compose start
 
@@ -24,7 +30,7 @@ migrate-up:
 	migrate -path db/migration -database "postgresql://root:admin@localhost:5434/vividly?sslmode=disable" -verbose up
 
 migrate-down:
-	migrate -path db/migration -database "postgresql://root:admin@localhost:5434/vividly?sslmode=disable" -verbose down 
+	migrate -path db/migration -database "postgresql://root:admin@localhost:5434/vividly?sslmode=disable" -verbose  down 1
 
 sqlc:
 	sqlc generate 
@@ -41,4 +47,4 @@ start-server:
 mock:
 	mockgen -destination db/mock/store.go -package mockdb  simple-bank/db/sqlc Store 
 
-.PHONY: createdb dropdb postgres-destroy postgres-setup migrate-up migrate-down sqlc test start-server mock
+.PHONY: createdb dropdb postgres-destroy postgres-setup migrate-up migrate-down sqlc test start-server mock create-container-image remove-image

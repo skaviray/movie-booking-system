@@ -41,7 +41,7 @@ func New(store db.Store, config utils.Config) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000"}, // Adjust based on your frontend URL
+		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"}, // Adjust based on your frontend URL
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -60,6 +60,12 @@ func (server *Server) setupRouter() {
 		authRoutes.GET("/genres/:id", server.GetGenre)
 		authRoutes.POST("/users", server.CreateUser)
 		authRoutes.GET("/userinfo", server.GetUserInfo)
+
+		authRoutes.GET("/seats/:id", server.GetSeat)
+
+		authRoutes.GET("/theaters/:id/seats", server.ListSeatsByTheater)
+		authRoutes.GET("/theaters/:id", server.GetTheater)
+		authRoutes.GET("/theatres", server.ListTheaters)
 	}
 
 	protected := router.Group("/").Use(server.authMiddleware(), server.isAdmin())
@@ -83,6 +89,14 @@ func (server *Server) setupRouter() {
 	protected.POST("/genres", server.CreateGenre)
 	protected.PATCH("/genres", server.UpdateGenre)
 	protected.DELETE("/genres/:id", server.DeleteGenre)
+
+	//Theater Routes
+	protected.POST("/theatres", server.CreateTheater)
+	protected.DELETE("/theatres/:id", server.DeleteTheater)
+
+	//Seats Routes
+	protected.POST("/seats", server.CreateSeat)
+	protected.PUT("/seats/:id", server.UpdateSeatStatus)
 	server.router = router
 }
 

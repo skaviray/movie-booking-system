@@ -22,6 +22,8 @@ import auth from './services/auth';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'font-awesome/css/font-awesome.css';
 import RequireAuth from './utils/RequireAuth';
+import TheatreDashboard from './movies/theatreDashboard';
+import TheatreForm from './movies/theatresForm';
 
 class App extends Component {
   state = {
@@ -57,8 +59,17 @@ class App extends Component {
                         {<MovieForm user={this.state.user} />}
                       </RequireAuth>
                      } />
-                   {/* element={<MovieForm/>}/> */}
             <Route path='/movies/:id' exact element={<MoviesDetails/>}/>
+            
+            <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
+            <Route path='/theatres/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<TheatreForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+                   {/* element={<MovieForm/>}/> */}
+            
             <Route path='/customers' element={<Customers/>}/>
             <Route path='/rentals' element={<Rentals/>}/>
             <Route path='/' exact element={<MoviesDashboard/>}/>

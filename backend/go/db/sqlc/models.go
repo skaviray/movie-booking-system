@@ -44,6 +44,25 @@ type Rental struct {
 	RentalFee    sql.NullString `json:"rental_fee"`
 }
 
+type Seat struct {
+	ID        int32     `json:"id"`
+	TheaterID int32     `json:"theater_id"`
+	Row       int32     `json:"row"`
+	Col       int32     `json:"col"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Theater struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	Rows      int32     `json:"rows"`
+	Columns   int32     `json:"columns"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type User struct {
 	ID                int64     `json:"id"`
 	Username          string    `json:"username"`

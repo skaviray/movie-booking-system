@@ -114,7 +114,6 @@ export default function MoviesDashboard({user})  {
                     onSelectGenre={handleGenreSelect}></ListGroup>
                 </div>
                 <div className="col">
-
                     {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary btn-sm">New Movie</button>}
                     <p>Showing {totalCount} movies from the database</p>
                     {/* <label for="exampleFormControlInput1" className="form-label">Search</label> */}

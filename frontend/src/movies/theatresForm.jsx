@@ -7,35 +7,30 @@ import Select from './common/select'
 import { useNavigate } from 'react-router'
 import { addMovie } from '../services/movieService'
 import { toast } from 'react-toastify'
-export default function  MovieForm() {
+import { addTheatre } from '../services/theatreService'
+export default function  TheatreForm() {
     const [data, setData] = useState({
-        "title": "",
-        "genre": "",
-        "numberInStock": "",
-        "rent": ""
+        "name": "",
+        "rows": "",
+        "columns": ""
     })
-    const [loading, setLoading] = useState(true)
-    const [genres, setGenres] = useState([])
+    // const [loading, setLoading] = useState(true)
     const [errors, setErrors] = useState({})
-    // const genres = getGenres()
     const navigate = useNavigate()
-    useEffect(() => {
-      const loadGenres = async () => {
-        const fetchedGenres = await fetchGenres()
-        setGenres(fetchedGenres)
-        setLoading(false)
-      }
-      loadGenres()
+    // useEffect(() => {
+    //   const loadGenres = async () => {
+    //     const fetchedGenres = await fetchGenres()
+    //   }
+    //   loadGenres()
 
-    }, [])
-    if (loading) return <div>Loading...</div>
-    const genreList  = genres.map(item => item.name.toLocaleLowerCase())
+    // }, [])
+    // if (loading) return <div>Loading...</div>
+    // const genreList  = genres.map(item => item.name.toLocaleLowerCase())
 
     schema = {
-      title: Joi.string().required().label("Title"),
-      genre: Joi.string().valid(genreList).required().label("Genre"),
-      numberInStock: Joi.number().integer().required().label("Number in Stock"),
-      rent: Joi.number().required().label("Rent Value"),
+      name: Joi.string().required().label("Name"),
+      rows: Joi.number().integer().required().label("Rows"),
+      columns: Joi.number().integer().required().label("Columns")
     }
     const validate = () => {
       const result = Joi.validate(data, schema, {abortEarly: false})
@@ -66,17 +61,14 @@ export default function  MovieForm() {
     const doSubmit =  async () => {
       try {
       console.log("Submitted")
-      const genre = genres.find(g => g.name.toLowerCase() === data.genre)
-      console.log(genre)
-      const movie = {
-        title: data.title,
-        genre_id: genre.id,
-        number_in_stock: Number(data.numberInStock),
-        daily_rental_rate: Number(data.rent)
+      const theatre = {
+        name: data.name,
+        rows: parseInt(data.rows),
+        columns: parseInt(data.columns)
       }
-      console.log(movie)
-      await addMovie(movie)
-      navigate("/movies")
+      console.log(theatre)
+      await addTheatre(theatre)
+      navigate("/theatres")
       }catch (ex) {
         if (ex.response && ex.response.status === 400){
           toast.error(ex.message)
@@ -97,7 +89,7 @@ export default function  MovieForm() {
         [name]: errorMessage
       }))}
     else delete errors[name]
-    console.log(data)
+    // console.log(data)
     setData(prev => ({
       ...prev,
       [name]: value
@@ -107,10 +99,9 @@ export default function  MovieForm() {
     <div>
         <h1>Movies Form</h1>
         <form onSubmit={handleSubmit}>
-            <Input name="title" label="Tittle" value={data.username} type="text" errors={errors} onChange={handleChange} />
-            <Select name="genre"  label="Genre" value={data.genre} items={genres} errors={errors} onChange={handleChange} />
-            <Input name="numberInStock" label="Number in Stock" value={data.numberInStock} type="text" errors={errors} onChange={handleChange} />
-            <Input name="rent" label="Rate" value={data.rent} type="text" errors={errors} onChange={handleChange} />
+            <Input name="name" label="Name" value={data.name} type="text" errors={errors} onChange={handleChange} />
+            <Input name="rows" label="Rows" value={data.rows} type="text" errors={errors} onChange={handleChange} />
+            <Input name="columns" label="Columns" value={data.columns} type="text" errors={errors} onChange={handleChange} />
             <button className="btn btn-primary" disabled={validate()}>Save</button>
         </form> 
     </div>

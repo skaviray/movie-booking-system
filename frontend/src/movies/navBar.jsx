@@ -25,6 +25,9 @@ export default function NavBar({user}) {
         <li className={ active === "movies" ? "nav-item active" : "nav-item"} onClick={() => handleSelect("movies")}>
             <NavLink className="nav-link" to="/movies">Movies <span className="sr-only">(current)</span></NavLink>
         </li>
+        <li className={ active === "theatres" ? "nav-item active" : "nav-item"} onClick={() => handleSelect("theatres")}>
+            <NavLink className="nav-link" to="/theatres">Theatres <span className="sr-only">(current)</span></NavLink>
+        </li>
         <li className={ active === "customers" ? "nav-item active" : "nav-item"} onClick={() => handleSelect("customers")}>
             <NavLink className="nav-link" to="/customers">Coustomers</NavLink>
         </li>

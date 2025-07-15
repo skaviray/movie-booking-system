@@ -13,22 +13,30 @@ type Querier interface {
 	CreateGenre(ctx context.Context, name string) (Genre, error)
 	CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error)
 	CreateRental(ctx context.Context, arg CreateRentalParams) (Rental, error)
+	CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error)
+	CreateTheater(ctx context.Context, arg CreateTheaterParams) (Theater, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteCustomer(ctx context.Context, id int64) error
 	DeleteGenre(ctx context.Context, id int64) error
 	DeleteMovie(ctx context.Context, id int64) error
 	DeleteRental(ctx context.Context, id int64) error
+	DeleteSeat(ctx context.Context, id int32) error
+	DeleteTheater(ctx context.Context, id int32) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetCustomer(ctx context.Context, id int64) (Customer, error)
 	GetGenre(ctx context.Context, id int64) (Genre, error)
 	GetMovie(ctx context.Context, id int64) (Movie, error)
 	GetRental(ctx context.Context, id int64) (Rental, error)
+	GetSeat(ctx context.Context, id int32) (Seat, error)
+	GetTheater(ctx context.Context, id int32) (Theater, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListCustomers(ctx context.Context) ([]Customer, error)
 	ListGenres(ctx context.Context) ([]Genre, error)
 	ListMovies(ctx context.Context) ([]Movie, error)
 	ListRentals(ctx context.Context) ([]Rental, error)
+	ListSeatsByTheater(ctx context.Context, theaterID int32) ([]Seat, error)
+	ListTheaters(ctx context.Context) ([]Theater, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	LookupRental(ctx context.Context, arg LookupRentalParams) (Rental, error)
 	// LIMIT $1 OFFSET $2;
@@ -39,6 +47,8 @@ type Querier interface {
 	UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error)
 	// LIMIT $1 OFFSET $2;
 	UpdateRentalReturn(ctx context.Context, arg UpdateRentalReturnParams) (Rental, error)
+	UpdateSeatStatus(ctx context.Context, arg UpdateSeatStatusParams) (Seat, error)
+	UpdateTheater(ctx context.Context, arg UpdateTheaterParams) (Theater, error)
 	// LIMIT $1 OFFSET $2;
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 }
