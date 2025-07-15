@@ -112,6 +112,8 @@ class MoviesDashboard extends Component {
        console.log(value)
     }
     render() { 
+        console.log(this.props)
+        const { user } = this.props
         const {length: count} = this.state.movies
         const { movies: allMovies, pageSize, currentPage, selectedGenre,sortColumn } = this.state
         const {totalCount,data} = this.getPagedData()

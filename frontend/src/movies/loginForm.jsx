@@ -2,11 +2,13 @@ import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
 import auth from '../services/auth'
-import { useNavigate } from 'react-router'
+import { useNavigate, useLocation } from 'react-router'
 
 
 export default function LoginForm() {
     const navigate = useNavigate()
+    const location = useLocation()
+    const from = location.state?.from?.pathname || "/"
     const [account, setAccount] = useState({
         "email": "",
         "password": ""
@@ -47,7 +49,8 @@ export default function LoginForm() {
           // console.log(response,headers)
           // localStorage.setItem("x-auth-token", headers['x-auth-token'])
 
-          window.location = "/"
+          window.location = from
+          // navigate(from, { replace: true })
         } catch(ex) {
           if (ex.response && (ex.response.status === 400 || ex.response.status === 401)){
             // setErrors({username: `user ${account.username} does not exist, please register...`})

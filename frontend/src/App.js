@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import MoviesDashboard from './movies/moviesDashboard';
+import MoviesDashboard from './movies/moviesDashboard_fn';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from './front-end-components/sidebar';
 // import NavBar from './components/navbar';
@@ -19,31 +19,45 @@ import { ToastContainer } from 'react-toastify';
 import Profile from './movies/profile';
 import Logout from './movies/logout';
 import auth from './services/auth';
-
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'font-awesome/css/font-awesome.css';
+import RequireAuth from './utils/RequireAuth';
 
 class App extends Component {
-  state = {}
+  state = {
+    user: {},
+    loading: true
+  }
   async componentDidMount() { 
     const user = await auth.getCurrentUser()
-    this.setState({user}, () => {
-      console.log(this.state)
-    })
+    // this.setState({user}, () => {
+    //   console.log(this.state)
+    // })
+    this.setState({user: user, loading: false})
+    // this.setState({loading: false})
    }
   render() { 
+    const {user} = this.state
+    console.log(user)
+    if (this.loading) return null
     return (
        <React.Fragment>
        <ToastContainer />
-        <NavBar user={this.state.user}/>
+        <NavBar user={user}/>
         <main className="container">
           <Routes>
             <Route path="/login" element={<LoginForm/>} />
             <Route path="/logout" element={<Logout/>} />
-            <Route path='/profile' element={<Profile user={this.state.user}/>} />
+            <Route path='/profile' element={<Profile user={user}/>} />
             <Route path="/register" element={<RegisterForm/>} />
-            <Route path='/movies' element={<MoviesDashboard/>}/>
-            <Route path='/movies/new' element={<MovieForm/>}/>
+            <Route path='/movies' element={<MoviesDashboard key={user?.username || "guest"} user={user}/>} />
+            <Route path='/movies/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<MovieForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+                   {/* element={<MovieForm/>}/> */}
             <Route path='/movies/:id' exact element={<MoviesDetails/>}/>
             <Route path='/customers' element={<Customers/>}/>
             <Route path='/rentals' element={<Rentals/>}/>

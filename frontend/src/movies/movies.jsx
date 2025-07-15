@@ -9,6 +9,7 @@ class MoviesTable extends Component {
 
     render() { 
         const {movies, onLike, onDelete, onSort, sortColumn } = this.props
+        console.log(movies)
         const columns = [
             {path: "title", label: "Title"},
             {path: "genre_id", label: "Genre"},
