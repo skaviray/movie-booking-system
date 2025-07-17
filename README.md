@@ -29,7 +29,6 @@ A full-stack web application for managing and booking movie tickets — includin
 | Database   | PostgreSQL             |
 | ORM        | SQLC                   |
 | Auth       | JWT / Paseto           |
-| Scheduling | Ansible (optional)     |
 | Deployment | Docker, Docker Compose |
 
 ---
