@@ -1,0 +1,109 @@
+
+Table "users" {
+  "id" BIGSERIAL [pk, increment]
+  "username" VARCHAR [not null]
+  "hashed_password" VARCHAR [not null]
+  "email" VARCHAR [unique, not null]
+  "full_name" VARCHAR [not null]
+  "password_changed_at" TIMESTAMPTZ [not null, default: '0001-01-01 00:00:00Z']
+  "is_admin" BOOLEAN [not null, default: FALSE]
+  "created_at" TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMPTZ [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "customers" {
+  "id" BIGSERIAL [pk, increment]
+  "name" VARCHAR(50) [not null]
+  "is_gold" BOOLEAN [not null, default: FALSE]
+  "phone" VARCHAR(50) [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "locations" {
+  "id" BIGSERIAL [pk, increment]
+  "city" TEXT [not null]
+  "state" TEXT [not null]
+  "country" TEXT [not null, default: 'India']
+  "address" TEXT [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "genres" {
+  "id" BIGSERIAL [pk, increment]
+  "name" VARCHAR(50) [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "movies" {
+  "id" BIGSERIAL [pk, increment]
+  "title" TEXT [not null]
+  "description" TEXT [not null, default: '']
+  "duration_minutes" INT [not null]
+  "language" TEXT [not null]
+  "genre_id" INTEGER [not null]
+  "release_date" DATE [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "theaters" {
+  "id" BIGSERIAL [pk, increment]
+  "name" TEXT [not null]
+  "location" INTEGER [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "screens" {
+  "id" BIGSERIAL [pk, increment]
+  "theater_id" INTEGER [not null]
+  "name" TEXT [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    (theater_id, name) [unique]
+  }
+}
+
+Table "showtimes" {
+  "id" BIGSERIAL [pk, increment]
+  "movie_id" INT [not null]
+  "screen_id" INT [not null]
+  "start_time" TIMESTAMP [not null]
+  "price" FLOAT [not null]
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "seats" {
+  "id" BIGSERIAL [pk, increment]
+  "screen_id" INTEGER [not null]
+  "row" INTEGER [not null]
+  "col" INTEGER [not null]
+  "status" TEXT [not null, default: 'available']
+  "created_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+  "updated_at" TIMESTAMP [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    (screen_id, row, col) [unique]
+  }
+}
+
+Ref:"genres"."id" < "movies"."genre_id" [delete: cascade]
+
+Ref:"locations"."id" < "theaters"."location" [delete: cascade]
+
+Ref:"theaters"."id" < "screens"."theater_id" [delete: cascade]
+
+Ref:"movies"."id" < "showtimes"."movie_id" [delete: cascade]
+
+Ref:"screens"."id" < "showtimes"."screen_id" [delete: cascade]
+
+Ref:"screens"."id" < "seats"."screen_id" [delete: cascade]
+
+
+Ref: "screens"."theater_id" < "screens"."id"
