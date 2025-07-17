@@ -9,23 +9,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type createSeatRequest struct {
+	ScreenId int32  `json:"screen_id" binding:"required"`
+	Row      int32  `json:"row" binding:"required"`
+	Col      int32  `json:"col" binding:"required"`
+	Status   string `json:"status" binding:"required"` // available, reserved, booked
+}
+
+type updateSeatReq struct {
+	Status string `json:"status" binding:"required"`
+}
+
 func (s *Server) CreateSeat(ctx *gin.Context) {
-	var req struct {
-		TheaterID int32  `json:"theater_id" binding:"required"`
-		Row       int32  `json:"row" binding:"required"`
-		Col       int32  `json:"col" binding:"required"`
-		Status    string `json:"status" binding:"required"` // available, reserved, booked
-	}
+	var req createSeatRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	seat, err := s.store.CreateSeat(ctx, db.CreateSeatParams{
-		TheaterID: req.TheaterID,
-		Row:       req.Row,
-		Col:       req.Col,
-		Status:    req.Status,
-	})
+	args := db.CreateSeatParams{
+		ScreenID: req.ScreenId,
+		Row:      req.Row,
+		Col:      req.Col,
+		Status:   req.Status,
+	}
+	seat, err := s.store.CreateSeat(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -39,26 +46,12 @@ func (s *Server) GetSeat(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid seat id"})
 		return
 	}
-	seat, err := s.store.GetSeat(ctx, int32(id))
+	seat, err := s.store.GetSeat(ctx, int64(id))
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "seat not found"})
 		return
 	}
 	ctx.JSON(http.StatusOK, seat)
-}
-
-func (s *Server) ListSeatsByTheater(ctx *gin.Context) {
-	theaterID, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid theater id"})
-		return
-	}
-	seats, err := s.store.ListSeatsByTheater(ctx, int32(theaterID))
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusOK, seats)
 }
 
 func (s *Server) UpdateSeatStatus(ctx *gin.Context) {
@@ -75,11 +68,11 @@ func (s *Server) UpdateSeatStatus(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	seat, err := s.store.UpdateSeatStatus(ctx, db.UpdateSeatStatusParams{
-		ID:     int32(id),
+	args := db.UpdateSeatStatusParams{
+		ID:     int64(id),
 		Status: req.Status,
-	})
+	}
+	seat, err := s.store.UpdateSeatStatus(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -93,7 +86,7 @@ func (s *Server) DeleteSeat(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid seat id"})
 		return
 	}
-	if err := s.store.DeleteSeat(ctx, int32(id)); err != nil {
+	if err := s.store.DeleteSeat(ctx, int64(id)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

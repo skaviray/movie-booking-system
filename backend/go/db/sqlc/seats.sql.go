@@ -10,21 +10,21 @@ import (
 )
 
 const createSeat = `-- name: CreateSeat :one
-INSERT INTO seats (theater_id, row, col, status)
+INSERT INTO seats (screen_id, row, col, status)
 VALUES ($1, $2, $3, $4)
-RETURNING id, theater_id, row, col, status, created_at, updated_at
+RETURNING id, screen_id, row, col, status, created_at, updated_at
 `
 
 type CreateSeatParams struct {
-	TheaterID int32  `json:"theater_id"`
-	Row       int32  `json:"row"`
-	Col       int32  `json:"col"`
-	Status    string `json:"status"`
+	ScreenID int32  `json:"screen_id"`
+	Row      int32  `json:"row"`
+	Col      int32  `json:"col"`
+	Status   string `json:"status"`
 }
 
 func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, createSeat,
-		arg.TheaterID,
+		arg.ScreenID,
 		arg.Row,
 		arg.Col,
 		arg.Status,
@@ -32,7 +32,7 @@ func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, e
 	var i Seat
 	err := row.Scan(
 		&i.ID,
-		&i.TheaterID,
+		&i.ScreenID,
 		&i.Row,
 		&i.Col,
 		&i.Status,
@@ -43,26 +43,24 @@ func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, e
 }
 
 const deleteSeat = `-- name: DeleteSeat :exec
-DELETE FROM seats
-WHERE id = $1
+DELETE FROM seats WHERE id = $1
 `
 
-func (q *Queries) DeleteSeat(ctx context.Context, id int32) error {
+func (q *Queries) DeleteSeat(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteSeat, id)
 	return err
 }
 
 const getSeat = `-- name: GetSeat :one
-SELECT id, theater_id, row, col, status, created_at, updated_at FROM seats
-WHERE id = $1
+SELECT id, screen_id, row, col, status, created_at, updated_at FROM seats WHERE id = $1
 `
 
-func (q *Queries) GetSeat(ctx context.Context, id int32) (Seat, error) {
+func (q *Queries) GetSeat(ctx context.Context, id int64) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, getSeat, id)
 	var i Seat
 	err := row.Scan(
 		&i.ID,
-		&i.TheaterID,
+		&i.ScreenID,
 		&i.Row,
 		&i.Col,
 		&i.Status,
@@ -72,14 +70,12 @@ func (q *Queries) GetSeat(ctx context.Context, id int32) (Seat, error) {
 	return i, err
 }
 
-const listSeatsByTheater = `-- name: ListSeatsByTheater :many
-SELECT id, theater_id, row, col, status, created_at, updated_at FROM seats
-WHERE theater_id = $1
-ORDER BY row, col
+const listSeatsByScreen = `-- name: ListSeatsByScreen :many
+SELECT id, screen_id, row, col, status, created_at, updated_at FROM seats WHERE screen_id = $1 ORDER BY row, col
 `
 
-func (q *Queries) ListSeatsByTheater(ctx context.Context, theaterID int32) ([]Seat, error) {
-	rows, err := q.db.QueryContext(ctx, listSeatsByTheater, theaterID)
+func (q *Queries) ListSeatsByScreen(ctx context.Context, screenID int32) ([]Seat, error) {
+	rows, err := q.db.QueryContext(ctx, listSeatsByScreen, screenID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +85,7 @@ func (q *Queries) ListSeatsByTheater(ctx context.Context, theaterID int32) ([]Se
 		var i Seat
 		if err := rows.Scan(
 			&i.ID,
-			&i.TheaterID,
+			&i.ScreenID,
 			&i.Row,
 			&i.Col,
 			&i.Status,
@@ -111,13 +107,13 @@ func (q *Queries) ListSeatsByTheater(ctx context.Context, theaterID int32) ([]Se
 
 const updateSeatStatus = `-- name: UpdateSeatStatus :one
 UPDATE seats
-SET status = $2
+SET status = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, theater_id, row, col, status, created_at, updated_at
+RETURNING id, screen_id, row, col, status, created_at, updated_at
 `
 
 type UpdateSeatStatusParams struct {
-	ID     int32  `json:"id"`
+	ID     int64  `json:"id"`
 	Status string `json:"status"`
 }
 
@@ -126,7 +122,7 @@ func (q *Queries) UpdateSeatStatus(ctx context.Context, arg UpdateSeatStatusPara
 	var i Seat
 	err := row.Scan(
 		&i.ID,
-		&i.TheaterID,
+		&i.ScreenID,
 		&i.Row,
 		&i.Col,
 		&i.Status,

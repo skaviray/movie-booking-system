@@ -8,18 +8,19 @@ import Table from './common/table'
 class MoviesTable extends Component {
 
     render() { 
-        const {movies, onLike, onDelete, onSort, sortColumn } = this.props
+        const {user,movies, onLike, onDelete, onSort, sortColumn, onBook } = this.props
         const columns = [
             {path: "title", label: "Title"},
             {path: "genre_id", label: "Genre"},
-            {path: "number_in_stock", label: "InStock"},
-            {path: "daily_rental_rate", label: "RentalRate"},
+            {path: "duration_minutes", label: "Duration"},
+            {path: "language", label: "Language"},
             {key: "like", content: movie => <Like liked={movie.liked} onClick={() => onLike(movie)}/>},
-            {key: "action", content: movie => <button onClick={() => onDelete(movie)  } className="btn btn-danger btn-sm">Delete</button>}
-
+            {key: "book", content: movie => <button onClick={() => onBook(movie)  } className="btn btn-primary btn-sm">Book</button>}
         ]
+        if (user && user.is_admin) columns.push({key: "action", content: movie => <button onClick={() => onDelete(movie)  } className="btn btn-danger btn-sm">Delete</button>})
         return (
             <Table
+            user={user}
             data={movies}
             columns={columns}
             sortColumn={sortColumn}

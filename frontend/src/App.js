@@ -19,11 +19,18 @@ import { ToastContainer } from 'react-toastify';
 import Profile from './movies/profile';
 import Logout from './movies/logout';
 import auth from './services/auth';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'font-awesome/css/font-awesome.css';
 import RequireAuth from './utils/RequireAuth';
-import TheatreDashboard from './movies/theatreDashboard';
-import TheatreForm from './movies/theatresForm';
+import TheatreDashboard from './movies/theatres/theatreDashboard';
+import TheatreForm from './movies/theatres/theatreForm';
+import LocationsForm from './movies/locations/locationsForm';
+import LocationsDashboard from './movies/locations/locationsDashboard';
+import ScreensDashboard from './movies/screens/screensDashboard';
+import ScreensForm from './movies/screens/screensForm';
+import GenresDashboard from './movies/genres/genresDashboard';
+import GenresForm from './movies/genres/genresForm';
+import ShowTimesDashboard from './movies/showtimes/showTimesDashboard'
+import ShowTimeForm from './movies/showtimes/showTimeForm'
+import BookingDashboard from './movies/bookings/bookingDashboard';
 
 class App extends Component {
   state = {
@@ -53,6 +60,7 @@ class App extends Component {
             <Route path='/profile' element={<Profile user={user}/>} />
             <Route path="/register" element={<RegisterForm/>} />
             <Route path='/movies' element={<MoviesDashboard key={user?.username || "guest"} user={user}/>} />
+  
             <Route path='/movies/new' 
                      element={
                       <RequireAuth user={this.state.user}>
@@ -60,7 +68,7 @@ class App extends Component {
                       </RequireAuth>
                      } />
             <Route path='/movies/:id' exact element={<MoviesDetails/>}/>
-            
+            <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
             <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
             <Route path='/theatres/new' 
                      element={
@@ -68,8 +76,57 @@ class App extends Component {
                         {<TheatreForm user={this.state.user} />}
                       </RequireAuth>
                      } />
-                   {/* element={<MovieForm/>}/> */}
-            
+
+            <Route path='/locations/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<LocationsForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             
+             <Route path='/locations' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<LocationsDashboard user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             <Route path='/screens' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<ScreensDashboard user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+
+             <Route path='/screens/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<ScreensForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             <Route path='/genres' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<GenresDashboard user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             <Route path='/genres/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<GenresForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             <Route path='/showtimes' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<ShowTimesDashboard user={this.state.user} />}
+                      </RequireAuth>
+                     } />
+             <Route path='/showtimes/new' 
+                     element={
+                      <RequireAuth user={this.state.user}>
+                        {<ShowTimeForm user={this.state.user} />}
+                      </RequireAuth>
+                     } />
             <Route path='/customers' element={<Customers/>}/>
             <Route path='/rentals' element={<Rentals/>}/>
             <Route path='/' exact element={<MoviesDashboard/>}/>

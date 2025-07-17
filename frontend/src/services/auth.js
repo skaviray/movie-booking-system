@@ -2,7 +2,7 @@ import config from "../config.json"
 import http from './service';
 import { getUserInfo } from './userService';
 
-const loginEndpoint = `${config.apiEndpoint}/auth/login`
+const loginEndpoint = `${config.apiEndpoint}/api/login`
 const tokenKey = "x-auth-token"
 
 

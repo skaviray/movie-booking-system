@@ -27,6 +27,20 @@ CREATE TABLE customers (
 );
 
 
+-- ====================================
+-- Customers Location
+-- ================================
+
+CREATE TABLE locations (
+    id BIGSERIAL PRIMARY KEY,
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    country TEXT DEFAULT 'India' NOT NULL,
+    address TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
 
 -- ====================================
 -- Genres Table
@@ -43,26 +57,72 @@ CREATE TABLE genres (
 -- Movies Table
 -- ====================================
 CREATE TABLE movies (
-  id BIGSERIAL PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  genre_id INT NOT NULL REFERENCES genres(id) ON DELETE RESTRICT,
-  number_in_stock INT NOT NULL CHECK (number_in_stock >= 0 AND number_in_stock <= 255),
-  daily_rental_rate FLOAT NOT NULL CHECK (daily_rental_rate >= 0 AND daily_rental_rate <= 255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '' NOT NULL,
+    duration_minutes INT NOT NULL,
+    language TEXT NOT NULL,
+    -- likes INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
+    release_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- ====================================
--- Rentals Table
+-- Theaters Table
 -- ====================================
-CREATE TABLE rentals (
-  id BIGSERIAL PRIMARY KEY,
-  customer_id INT NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
-  movie_id INT NOT NULL REFERENCES movies(id) ON DELETE RESTRICT,
-  date_out TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  date_returned TIMESTAMP,
-  rental_fee NUMERIC(10, 2) CHECK (rental_fee >= 0)
+CREATE TABLE theaters (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    location INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+
+
+-- ====================================
+-- Screens Table
+-- ====================================
+CREATE TABLE screens (
+    id BIGSERIAL PRIMARY KEY,
+    theater_id INTEGER NOT NULL REFERENCES theaters(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    UNIQUE(theater_id, name)
+);
+
+-- ====================================
+-- Showtimes Table
+-- ====================================
+CREATE TABLE showtimes (
+    id BIGSERIAL PRIMARY KEY,
+    movie_id INT NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+    screen_id INT NOT NULL REFERENCES screens(id) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL,
+    -- end_time TIMESTAMP GENERATED ALWAYS AS (start_time + (movies.duration_minutes || ' minutes')::interval) STORED,
+    price FLOAT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+-- ====================================
+-- Seats Table
+-- ====================================
+CREATE TABLE seats (
+    id BIGSERIAL PRIMARY KEY,
+    screen_id INTEGER NOT NULL REFERENCES screens(id) ON DELETE CASCADE,
+    row INTEGER NOT NULL,
+    col INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    UNIQUE(screen_id, row, col)
+);
+
 
 -- ====================================
 -- Trigger to auto-update `updated_at`
@@ -76,19 +136,48 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply trigger to relevant tables
+-- Users
 CREATE TRIGGER set_updated_at_users
 BEFORE UPDATE ON users
 FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
+-- Customers
 CREATE TRIGGER set_updated_at_customers
 BEFORE UPDATE ON customers
 FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
+-- Locations
+CREATE TRIGGER set_updated_at_locations
+BEFORE UPDATE ON locations
+FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Genres
 CREATE TRIGGER set_updated_at_genres
 BEFORE UPDATE ON genres
 FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
+-- Movies
 CREATE TRIGGER set_updated_at_movies
 BEFORE UPDATE ON movies
+FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Theaters
+CREATE TRIGGER set_updated_at_theaters
+BEFORE UPDATE ON theaters
+FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Screens
+CREATE TRIGGER set_updated_at_screens
+BEFORE UPDATE ON screens
+FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Showtimes
+CREATE TRIGGER set_updated_at_showtimes
+BEFORE UPDATE ON showtimes
+FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Seats
+CREATE TRIGGER set_updated_at_seats
+BEFORE UPDATE ON seats
 FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 

@@ -9,21 +9,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type createTheatreRequest struct {
+	Name     string `json:"name" binding:"required"`
+	Location int32  `json:"location" binding:"required"`
+	// Rows     int32  `json:"rows" binding:"required"`
+	// Columns  int32  `json:"columns" binding:"required"`
+}
+
 func (s *Server) CreateTheater(ctx *gin.Context) {
-	var req struct {
-		Name    string `json:"name" binding:"required"`
-		Rows    int32  `json:"rows" binding:"required"`
-		Columns int32  `json:"columns" binding:"required"`
-	}
+	var req createTheatreRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	theater, err := s.store.CreateTheater(ctx, db.CreateTheaterParams{
-		Name:    req.Name,
-		Rows:    req.Rows,
-		Columns: req.Columns,
-	})
+	args := db.CreateTheaterParams{
+		Name:     req.Name,
+		Location: req.Location,
+		// Rows:    req.Rows,
+		// Columns: req.Columns,
+	}
+	theater, err := s.store.CreateTheater(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -37,7 +42,7 @@ func (s *Server) GetTheater(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid theater id"})
 		return
 	}
-	theater, err := s.store.GetTheater(ctx, int32(id))
+	theater, err := s.store.GetTheater(ctx, int64(id))
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "theater not found"})
 		return
@@ -61,22 +66,17 @@ func (s *Server) UpdateTheater(ctx *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Name    string `json:"name" binding:"required"`
-		Rows    int32  `json:"rows" binding:"required"`
-		Columns int32  `json:"columns" binding:"required"`
-	}
+	var req createTheatreRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	theater, err := s.store.UpdateTheater(ctx, db.UpdateTheaterParams{
-		ID:      int32(id),
-		Name:    req.Name,
-		Rows:    req.Rows,
-		Columns: req.Columns,
-	})
+	args := db.UpdateTheaterParams{
+		ID:       int64(id),
+		Name:     req.Name,
+		Location: req.Location,
+	}
+	theater, err := s.store.UpdateTheater(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -90,7 +90,7 @@ func (s *Server) DeleteTheater(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid theater id"})
 		return
 	}
-	if err := s.store.DeleteTheater(ctx, int32(id)); err != nil {
+	if err := s.store.DeleteTheater(ctx, int64(id)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -5,7 +5,6 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -25,28 +24,39 @@ type Genre struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Location struct {
+	ID        int64     `json:"id"`
+	City      string    `json:"city"`
+	State     string    `json:"state"`
+	Country   string    `json:"country"`
+	Address   string    `json:"address"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Movie struct {
 	ID              int64     `json:"id"`
 	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes"`
+	Language        string    `json:"language"`
 	GenreID         int32     `json:"genre_id"`
-	NumberInStock   int32     `json:"number_in_stock"`
-	DailyRentalRate float64   `json:"daily_rental_rate"`
+	ReleaseDate     time.Time `json:"release_date"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
 
-type Rental struct {
-	ID           int64          `json:"id"`
-	CustomerID   int32          `json:"customer_id"`
-	MovieID      int32          `json:"movie_id"`
-	DateOut      time.Time      `json:"date_out"`
-	DateReturned sql.NullTime   `json:"date_returned"`
-	RentalFee    sql.NullString `json:"rental_fee"`
+type Screen struct {
+	ID        int64     `json:"id"`
+	TheaterID int32     `json:"theater_id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Seat struct {
-	ID        int32     `json:"id"`
-	TheaterID int32     `json:"theater_id"`
+	ID        int64     `json:"id"`
+	ScreenID  int32     `json:"screen_id"`
 	Row       int32     `json:"row"`
 	Col       int32     `json:"col"`
 	Status    string    `json:"status"`
@@ -54,11 +64,20 @@ type Seat struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Showtime struct {
+	ID        int64     `json:"id"`
+	MovieID   int32     `json:"movie_id"`
+	ScreenID  int32     `json:"screen_id"`
+	StartTime time.Time `json:"start_time"`
+	Price     float64   `json:"price"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Theater struct {
-	ID        int32     `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
-	Rows      int32     `json:"rows"`
-	Columns   int32     `json:"columns"`
+	Location  int32     `json:"location"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

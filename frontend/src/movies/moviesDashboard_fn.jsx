@@ -70,6 +70,10 @@ export default function MoviesDashboard({user})  {
         // console.log(sortColumn)
         setSortColumn(sortColumn)
     }
+    const handleBook = (movie) => {
+        console.log("book", movie)
+        navigate(`/movies/${movie.id}/bookings`)
+    }
     const getPagedData = () => {
         // let filtered = movies
         let filtered = movies
@@ -114,23 +118,27 @@ export default function MoviesDashboard({user})  {
                     onSelectGenre={handleGenreSelect}></ListGroup>
                 </div>
                 <div className="col">
-                    {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary btn-sm">New Movie</button>}
                     <p>Showing {totalCount} movies from the database</p>
-                    {/* <label for="exampleFormControlInput1" className="form-label">Search</label> */}
+                    <div className="d-flex align-items-center mb-3">
                     <input 
                     autoFocus
                     type="text" 
-                    className="form-control mb-3" 
+                    className="form-control me-2" 
                     placeholder="Search Movies ..." 
                     // name='search' 
                     value={searchString} 
                     onChange={handleSearch}/>
+                    {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary me-2">Add</button>}
+                    {/* {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary">DEL</button>} */}
+                    </div>
                     <MoviesTable
+                    user={user}
                     movies={data}
                     sortColumn={sortColumn}
                     onLike={handleLike}
                     onDelete={handleDelete}
                     onSort={handleOnSort}
+                    onBook={handleBook}
                     ></MoviesTable>
                     <Pagination className="pagination"
                     itemsCount={totalCount} 

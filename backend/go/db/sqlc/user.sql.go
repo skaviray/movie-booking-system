@@ -152,7 +152,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 }
 
 const updateUserPassword = `-- name: UpdateUserPassword :one
-
 UPDATE users
 SET hashed_password = $2,
     password_changed_at = NOW()
@@ -165,7 +164,6 @@ type UpdateUserPasswordParams struct {
 	HashedPassword string `json:"hashed_password"`
 }
 
-// LIMIT $1 OFFSET $2;
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
 	var i User

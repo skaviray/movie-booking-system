@@ -137,16 +137,6 @@ func (server *Server) GetUser(ctx *gin.Context) {
 }
 
 func (server *Server) ListUsers(ctx *gin.Context) {
-	// var query struct {
-	// 	Limit int `form:"limit" binding:"required,min=1"`
-	// 	// Offset int `form:"offset" binding:"required,min=0"`
-	// }
-	// fmt.Println("Query:", ctx.Request.URL.RawQuery)
-	// if err := ctx.ShouldBindQuery(&query); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
 	users, err := server.store.ListUsers(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -209,13 +199,6 @@ func (server *Server) DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }
 
-// type UserInfo struct {
-// }
-
-// type userInfoResponse struct {
-// 	User UserInfo `json:"user"`
-// }
-
 func (server *Server) GetUserInfo(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
@@ -229,13 +212,6 @@ func (server *Server) GetUserInfo(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-
-	// Send user info back
-	// c.JSON(http.StatusOK, gin.H{"user": gin.H{
-	// 	"username": payload.Username,
-	// 	"user_id":  payload.UserID,
-	// 	"is_admin": payload.IsAdmin,
-	// }})
 	c.JSON(http.StatusOK, gin.H{
 		"username": payload.Username,
 		"user_id":  payload.UserID,

@@ -47,56 +47,90 @@ func (server *Server) setupRouter() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	authRoutes := router.Group("/auth")
+	authRoutes := router.Group("/api")
 	{
+		// User Public Routes
 		authRoutes.POST("/register", server.CreateUser)
 		authRoutes.POST("/login", server.LoginUser)
-		authRoutes.GET("/movies/:id", server.GetMovie)
-		authRoutes.GET("/movies", server.ListMovies)
-		authRoutes.POST("/movies", server.CreateMovie)
-		authRoutes.PUT("/movies/:id", server.UpdateMovie)
-		authRoutes.DELETE("/movies/:id", server.DeleteMovie)
-		authRoutes.GET("/genres", server.ListGenres)
-		authRoutes.GET("/genres/:id", server.GetGenre)
 		authRoutes.POST("/users", server.CreateUser)
 		authRoutes.GET("/userinfo", server.GetUserInfo)
 
+		// Movies Public Routes
+		authRoutes.GET("/movies", server.ListMovies)
+		authRoutes.GET("/movies/:id", server.GetMovie)
+		authRoutes.GET("/movies/:id/showtimes", server.GetShowtimesByMovie)
+
+		// Movies Locations Routes
+		authRoutes.GET("/locations", server.ListLocations)
+		authRoutes.GET("/locations/:id", server.GetLocation)
+
+		// Genres Public Routes
+		authRoutes.GET("/genres", server.ListGenres)
+		authRoutes.GET("/genres/:id", server.GetGenre)
+
+		// Seats Public Routes
+		// authRoutes.GET("/seats", server.lis)
 		authRoutes.GET("/seats/:id", server.GetSeat)
 
-		authRoutes.GET("/theaters/:id/seats", server.ListSeatsByTheater)
+		// Theatre public routes
+		// authRoutes.GET("/theaters/:id/seats", server.ListSeatsByTheater)
 		authRoutes.GET("/theaters/:id", server.GetTheater)
 		authRoutes.GET("/theatres", server.ListTheaters)
+
+		// showtime public routes
+		authRoutes.GET("/showtimes", server.ListShowTimes)
+		authRoutes.GET("/showtimes/:id", server.GetShowTime)
 	}
 
-	protected := router.Group("/").Use(server.authMiddleware(), server.isAdmin())
+	protected := router.Group("/api").Use(server.authMiddleware(), server.isAdmin())
 	// protected.GET("/", server.GetUser)
-	protected.POST("/users", server.CreateUser)
+	// protected.POST("/users", server.CreateUser)
 	protected.GET("/users/:id", server.GetUser)
 	protected.GET("/users", server.ListUsers)
 	protected.PATCH("/users/password", server.UpdateUserPassword)
 	protected.DELETE("/users/:id", server.DeleteUser)
+
 	// customers Routes
 	protected.POST("/customers", server.CreateCustomer)
 	protected.GET("/customers", server.ListCustomers)
 	protected.GET("/customers/:id", server.GetCustomer)
 	protected.PATCH("/customers", server.UpdateCustomer)
 	protected.DELETE("/customers/:id", server.DeleteCustomer)
+
+	// Location Routes
+	protected.POST("/locations", server.CreateLocation)
+	protected.PUT("/locations/:id", server.UpdateLocation)
+	protected.DELETE("/locations/:id", server.DeleteLocation)
+
 	// Movies Routes
+	protected.POST("/movies", server.CreateMovie)
 	protected.PUT("/movies/:id", server.UpdateMovie)
-	protected.PATCH("/movies", server.UpdateMovie)
-	// protected.DELETE("/movies/:id", server.DeleteMovie)
-	// Genres Routess
+	protected.DELETE("/movies/:id", server.DeleteMovie)
+
+	// Genres Routes
 	protected.POST("/genres", server.CreateGenre)
 	protected.PATCH("/genres", server.UpdateGenre)
 	protected.DELETE("/genres/:id", server.DeleteGenre)
 
 	//Theater Routes
 	protected.POST("/theatres", server.CreateTheater)
+	protected.PUT("/theatres", server.UpdateTheater)
 	protected.DELETE("/theatres/:id", server.DeleteTheater)
 
 	//Seats Routes
 	protected.POST("/seats", server.CreateSeat)
 	protected.PUT("/seats/:id", server.UpdateSeatStatus)
+
+	//Screen Routes
+	protected.GET("/screens", server.ListScreens)
+	protected.GET("/screens/:id", server.GetScreen)
+	protected.POST("/screens", server.CreateScreen)
+	protected.PUT("/screens/:id", server.UpdateScreen)
+
+	// Showtimes Protected Routes
+	authRoutes.POST("/showtimes", server.CreateShowTime)
+	authRoutes.PUT("/showtimes/:id", server.UpdateShowTime)
+	authRoutes.DELETE("/showtimes/:id", server.DeleteShowTime)
 	server.router = router
 }
 

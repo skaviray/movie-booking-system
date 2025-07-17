@@ -1,7 +1,7 @@
 // import axios from 'axios';
 import http from './service';
 import config from '../config.json'
-const usersEndpoint = `${config.apiEndpoint}/auth/users`
+const usersEndpoint = `${config.apiEndpoint}/api/users`
 
 export const registerUser = async (user) => {
     console.log(usersEndpoint)
@@ -11,8 +11,8 @@ export const registerUser = async (user) => {
 }
 
 export const getUserInfo = async (token) => {
-  console.log(`${config.apiEndpoint}/auth/userinfo`)
-  const response = await http.get(`${config.apiEndpoint}/auth/userinfo`, {
+  console.log(`${config.apiEndpoint}/api/userinfo`)
+  const response = await http.get(`${config.apiEndpoint}/api/userinfo`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -20,21 +20,3 @@ export const getUserInfo = async (token) => {
   console.log(response)
   return response;
 }
-// export const addMovie = async (obj) => {
-//   const response = await http.post(moviesEndpoint, obj);
-//   return response.data;
-// }
-
-// export const deleteMovie = async (movie) => {
-//     const deleteEndpoint = moviesEndpoint + '/' + movie.id
-//     console.log(deleteEndpoint)
-//   const response = await http.delete(deleteEndpoint);
-//   return response.data;
-// }
-
-// export const updateMovie = async (movie) => {
-//     const updateEndpoint = moviesEndpoint + '/' + movie.id
-//     console.log(updateEndpoint)
-//   const response = await http.put(updateEndpoint, movie);
-//   return response.data;
-// }

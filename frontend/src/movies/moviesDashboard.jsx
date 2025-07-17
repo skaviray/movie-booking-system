@@ -138,6 +138,7 @@ class MoviesDashboard extends Component {
                     value={this.state.searchString} 
                     onChange={this.handleSearch}/>
                     <MoviesTable
+                    user= {user}
                     movies={data}
                     sortColumn={sortColumn}
                     onLike={this.handleLike}

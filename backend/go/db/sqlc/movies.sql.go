@@ -7,35 +7,42 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createMovie = `-- name: CreateMovie :one
-INSERT INTO movies (title, genre_id, number_in_stock, daily_rental_rate)
-VALUES ($1, $2, $3, $4)
-RETURNING id, title, genre_id, number_in_stock, daily_rental_rate, created_at, updated_at
+INSERT INTO movies (title, description, duration_minutes, language, genre_id, release_date)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at
 `
 
 type CreateMovieParams struct {
-	Title           string  `json:"title"`
-	GenreID         int32   `json:"genre_id"`
-	NumberInStock   int32   `json:"number_in_stock"`
-	DailyRentalRate float64 `json:"daily_rental_rate"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes"`
+	Language        string    `json:"language"`
+	GenreID         int32     `json:"genre_id"`
+	ReleaseDate     time.Time `json:"release_date"`
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error) {
 	row := q.db.QueryRowContext(ctx, createMovie,
 		arg.Title,
+		arg.Description,
+		arg.DurationMinutes,
+		arg.Language,
 		arg.GenreID,
-		arg.NumberInStock,
-		arg.DailyRentalRate,
+		arg.ReleaseDate,
 	)
 	var i Movie
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.Description,
+		&i.DurationMinutes,
+		&i.Language,
 		&i.GenreID,
-		&i.NumberInStock,
-		&i.DailyRentalRate,
+		&i.ReleaseDate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -52,7 +59,7 @@ func (q *Queries) DeleteMovie(ctx context.Context, id int64) error {
 }
 
 const getMovie = `-- name: GetMovie :one
-SELECT id, title, genre_id, number_in_stock, daily_rental_rate, created_at, updated_at FROM movies WHERE id = $1 LIMIT 1
+SELECT id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies WHERE id = $1
 `
 
 func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
@@ -61,9 +68,11 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.Description,
+		&i.DurationMinutes,
+		&i.Language,
 		&i.GenreID,
-		&i.NumberInStock,
-		&i.DailyRentalRate,
+		&i.ReleaseDate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -71,8 +80,7 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 }
 
 const listMovies = `-- name: ListMovies :many
-SELECT id, title, genre_id, number_in_stock, daily_rental_rate, created_at, updated_at FROM movies
-ORDER BY id
+SELECT id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies ORDER BY id
 `
 
 func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
@@ -87,9 +95,11 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.Description,
+			&i.DurationMinutes,
+			&i.Language,
 			&i.GenreID,
-			&i.NumberInStock,
-			&i.DailyRentalRate,
+			&i.ReleaseDate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -107,40 +117,41 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 }
 
 const updateMovie = `-- name: UpdateMovie :one
-
 UPDATE movies
-SET title = $2,
-    genre_id = $3,
-    number_in_stock = $4,
-    daily_rental_rate = $5
+SET title = $2, description = $3, duration_minutes = $4, language = $5, genre_id = $6, release_date = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, title, genre_id, number_in_stock, daily_rental_rate, created_at, updated_at
+RETURNING id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at
 `
 
 type UpdateMovieParams struct {
-	ID              int64   `json:"id"`
-	Title           string  `json:"title"`
-	GenreID         int32   `json:"genre_id"`
-	NumberInStock   int32   `json:"number_in_stock"`
-	DailyRentalRate float64 `json:"daily_rental_rate"`
+	ID              int64     `json:"id"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes"`
+	Language        string    `json:"language"`
+	GenreID         int32     `json:"genre_id"`
+	ReleaseDate     time.Time `json:"release_date"`
 }
 
-// LIMIT $1 OFFSET $2;
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error) {
 	row := q.db.QueryRowContext(ctx, updateMovie,
 		arg.ID,
 		arg.Title,
+		arg.Description,
+		arg.DurationMinutes,
+		arg.Language,
 		arg.GenreID,
-		arg.NumberInStock,
-		arg.DailyRentalRate,
+		arg.ReleaseDate,
 	)
 	var i Movie
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.Description,
+		&i.DurationMinutes,
+		&i.Language,
 		&i.GenreID,
-		&i.NumberInStock,
-		&i.DailyRentalRate,
+		&i.ReleaseDate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

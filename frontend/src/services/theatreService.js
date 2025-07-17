@@ -1,6 +1,6 @@
 import http from './service';
 import config from '../config.json'
-const theatreEndpoint = `${config.apiEndpoint}/auth/theatres`
+const theatreEndpoint = `${config.apiEndpoint}/api/theatres`
 
 export const fetchTheatres = async () => {
     console.log(theatreEndpoint)
@@ -9,7 +9,7 @@ export const fetchTheatres = async () => {
 }
 
 export const addTheatre = async (theatre) => {
-    const addEndpoint = `${config.apiEndpoint}/theatres`
+    const addEndpoint = theatreEndpoint
   const response = await http.post(addEndpoint, theatre);
   return response.data;
 }
@@ -22,7 +22,7 @@ export const deleteTheatre = async (theatre) => {
 }
 
 export const updateTheatre = async (theatre) => {
-    const updateEndpoint = `${config.apiEndpoint}/theatres/` + theatre.id
+    const updateEndpoint = theatreEndpoint + '/' + theatre.id
     console.log(updateEndpoint)
   const response = await http.put(updateEndpoint, theatre);
   return response.data;

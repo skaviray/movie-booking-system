@@ -3,7 +3,7 @@ import TableBody from './tableBody';
 import TableHeader from './tableHeader';
 
 const Table = (props) => {
-    const {data, columns, sortColumn, onSort, onDelete} = props
+    const {user,data, columns, sortColumn, onSort, onDelete} = props
     return (
         <table className="table table-bordered table-stripe">
             <TableHeader
@@ -12,6 +12,7 @@ const Table = (props) => {
             onSort={onSort}
             />
             <TableBody 
+            user={user}
             data={data}
             columns={columns}
             onDelete={onDelete}

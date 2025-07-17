@@ -4,12 +4,11 @@ VALUES ($1)
 RETURNING *;
 
 -- name: GetGenre :one
-SELECT * FROM genres WHERE id = $1 LIMIT 1;
+SELECT * FROM genres WHERE id = $1;
 
 -- name: ListGenres :many
 SELECT * FROM genres
 ORDER BY id;
--- LIMIT $1 OFFSET $2;
 
 -- name: UpdateGenre :one
 UPDATE genres

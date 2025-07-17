@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {  Navigate, useNavigate, useParams } from 'react-router'
 // import { getMovies } from '../services/fakeMovieService'
-import { fetchMovies, updateMovie } from '../services/movieService'
+import { fetchMovies, fetchMovieWithId, updateMovie } from '../services/movieService'
 
 export default function MoviesDetails() {
     const navigate = useNavigate()
     const {id} = useParams()
-    const [movies, setMovies] = useState([])
+    const [movie, setMovie] = useState({})
     const [loading, setLoading] = useState(true)
     const handleSave = async (movie) => {
       try {
@@ -21,17 +21,15 @@ export default function MoviesDetails() {
     }
     useEffect(() => {
         const loadMovies = async () =>  {
-          const data = await fetchMovies()
+          const data = await fetchMovieWithId(id)
           console.log(data)  
-          setMovies(data)
+          setMovie(data)
           setLoading(false)
     }
     loadMovies()
   },[])
   if (loading) return <div>Loading...</div>
     console.log(id)
-    console.log(movies)
-    const movie = movies.find(m => m.id === parseInt(id))
     console.log(movie)
     if (!movie) {
     return <Navigate to="/not-found" />

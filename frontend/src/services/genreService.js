@@ -1,7 +1,7 @@
 // import axios from 'axios';
 import axios from './service';
 import config from '../config.json'
-const genreEndpoint = `${config.apiEndpoint}/auth/genres`
+const genreEndpoint = `${config.apiEndpoint}/api/genres`
 
 export const fetchGenres = async () => {
     console.log(genreEndpoint)
@@ -9,20 +9,20 @@ export const fetchGenres = async () => {
   return response.data;
 }
 
-export const addGenre = async (obj) => {
-  const response = await axios.post(genreEndpoint, obj);
+export const addGenre = async (genre) => {
+  const response = await axios.post(genreEndpoint, genre);
   return response.data;
 }
 
-export const deleteGenre = async (post) => {
-    const deleteEndpoint = genreEndpoint + '/' + post.id
+export const deleteGenre = async (genre) => {
+    const deleteEndpoint = genreEndpoint + '/' + genre.id
     console.log(deleteEndpoint)
   const response = await axios.delete(deleteEndpoint);
   return response.data;
 }
 
-export const updateGenre = async (post) => {
-    const updateEndpoint = genreEndpoint + '/' + post.id
-  const response = await axios.put(updateEndpoint, post);
+export const updateGenre = async (genre) => {
+    const updateEndpoint = genreEndpoint + '/' + genre.id
+  const response = await axios.put(updateEndpoint, genre);
   return response.data;
 }

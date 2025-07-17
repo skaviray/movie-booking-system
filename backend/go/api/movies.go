@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 	"time"
 	db "vividly-backend/db/sqlc"
 
@@ -10,26 +11,30 @@ import (
 )
 
 type createMovieRequest struct {
-	Title           string  `json:"title" binding:"required"`
-	GenreID         int32   `json:"genre_id" binding:"required"`
-	NumberInStock   int32   `json:"number_in_stock" binding:"required"`
-	DailyRentalRate float64 `json:"daily_rental_rate" binding:"required"`
+	Title           string    `json:"title" binding:"required"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes" binding:"required"`
+	Language        string    `json:"language" binding:"required"`
+	GenreId         int32     `json:"genre_id" binding:"required"`
+	ReleaseDate     time.Time `json:"release_date" binding:"required"`
 }
 
 type updateMovieRequest struct {
-	ID              int64   `json:"id" binding:"required"`
-	Title           string  `json:"title" binding:"required"`
-	GenreID         int32   `json:"genre_id" binding:"required"`
-	NumberInStock   int32   `json:"number_in_stock" binding:"required"`
-	DailyRentalRate float64 `json:"daily_rental_rate" binding:"required"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes"`
+	Language        string    `json:"language"`
+	GenreId         int32     `json:"genre_id"`
+	ReleaseDate     time.Time `json:"release_date"`
 }
 
 type movieResponse struct {
 	ID              int64     `json:"id"`
 	Title           string    `json:"title"`
 	GenreID         int32     `json:"genre_id"`
-	NumberInStock   int32     `json:"number_in_stock"`
-	DailyRentalRate float64   `json:"daily_rental_rate"`
+	Description     string    `json:"description"`
+	DurationMinutes int32     `json:"duration_minutes"`
+	Language        string    `json:"language"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
@@ -39,8 +44,9 @@ func newMovieResponse(m db.Movie) movieResponse {
 		ID:              m.ID,
 		Title:           m.Title,
 		GenreID:         m.GenreID,
-		NumberInStock:   m.NumberInStock,
-		DailyRentalRate: m.DailyRentalRate,
+		Description:     m.Description,
+		DurationMinutes: m.DurationMinutes,
+		Language:        m.Language,
 		CreatedAt:       m.CreatedAt,
 		UpdatedAt:       m.UpdatedAt,
 	}
@@ -55,9 +61,11 @@ func (server *Server) CreateMovie(ctx *gin.Context) {
 
 	movie, err := server.store.CreateMovie(ctx, db.CreateMovieParams{
 		Title:           req.Title,
-		GenreID:         req.GenreID,
-		NumberInStock:   req.NumberInStock,
-		DailyRentalRate: req.DailyRentalRate,
+		GenreID:         req.GenreId,
+		Description:     req.Description,
+		DurationMinutes: req.DurationMinutes,
+		Language:        req.Language,
+		ReleaseDate:     req.ReleaseDate,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -91,21 +99,6 @@ func (server *Server) GetMovie(ctx *gin.Context) {
 }
 
 func (server *Server) ListMovies(ctx *gin.Context) {
-	// var query struct {
-	// 	Limit  int32 `form:"limit" binding:"required,min=1"`
-	// 	Offset int32 `form:"offset" binding:"required,min=0"`
-	// }
-
-	// if err := ctx.ShouldBindQuery(&query); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// params := db.ListMoviesParams{
-	// 	Limit:  query.Limit,
-	// 	Offset: query.Offset,
-	// }
-
 	movies, err := server.store.ListMovies(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -121,6 +114,14 @@ func (server *Server) ListMovies(ctx *gin.Context) {
 }
 
 func (server *Server) UpdateMovie(ctx *gin.Context) {
+	var uri struct {
+		ID int64 `uri:"id" binding:"required"`
+	}
+
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	var req updateMovieRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -128,11 +129,13 @@ func (server *Server) UpdateMovie(ctx *gin.Context) {
 	}
 
 	movie, err := server.store.UpdateMovie(ctx, db.UpdateMovieParams{
-		ID:              req.ID,
+		ID:              uri.ID,
 		Title:           req.Title,
-		GenreID:         req.GenreID,
-		NumberInStock:   req.NumberInStock,
-		DailyRentalRate: req.DailyRentalRate,
+		GenreID:         req.GenreId,
+		Language:        req.Language,
+		Description:     req.Description,
+		DurationMinutes: req.DurationMinutes,
+		ReleaseDate:     req.ReleaseDate,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -160,11 +163,37 @@ func (server *Server) DeleteMovie(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "movie deleted"})
 }
 
-// func (server *Server) setupMovieRoutes(router *gin.Engine) {
-// 	movieRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
-// 	movieRoutes.POST("/movies", server.CreateMovie)
-// 	movieRoutes.GET("/movies", server.ListMovies)
-// 	movieRoutes.GET("/movies/:id", server.GetMovie)
-// 	movieRoutes.PATCH("/movies", server.UpdateMovie)
-// 	movieRoutes.DELETE("/movies/:id", server.DeleteMovie)
+type GetTheatersAndShowtimesByMovieRow struct {
+	TheaterID   int32     `db:"theater_id"`
+	TheaterName string    `db:"theater_name"`
+	Location    string    `db:"location"`
+	ScreenID    int32     `db:"screen_id"`
+	ShowtimeID  int32     `db:"showtime_id"`
+	StartTime   time.Time `db:"start_time"`
+}
+
+// type TheaterShowtimeResponse struct {
+// 	TheaterID  int32     `json:"theater_id"`
+// 	Name       string    `json:"name"`
+// 	Location   string    `json:"location"`
+// 	ScreenID   int32     `json:"screen_id"`
+// 	ShowtimeID int32     `json:"showtime_id"`
+// 	StartTime  time.Time `json:"start_time"`
 // }
+
+func (s *Server) GetShowtimesByMovie(ctx *gin.Context) {
+	movieIDParam := ctx.Param("id")
+	movieID, err := strconv.Atoi(movieIDParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid movie_id"})
+		return
+	}
+
+	showtimes, err := s.store.GetTheatersAndShowtimesByMovie(ctx, int32(movieID))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch showtimes"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, showtimes)
+}

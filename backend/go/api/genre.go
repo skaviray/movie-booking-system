@@ -1,124 +1,77 @@
 package api
 
 import (
-	"database/sql"
 	"net/http"
-	"time"
+	"strconv"
 	db "vividly-backend/db/sqlc"
 
 	"github.com/gin-gonic/gin"
 )
 
-type genreResponse struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+type createGenreRequest struct {
+	Name string `json:"name" binding:"required"`
 }
 
-func newGenreResponse(g db.Genre) genreResponse {
-	return genreResponse{
-		ID:        g.ID,
-		Name:      g.Name,
-		CreatedAt: g.CreatedAt,
-		UpdatedAt: g.UpdatedAt,
-	}
+type updateGenreRequest struct {
+	Name string `json:"name"`
 }
 
-func (server *Server) CreateGenre(ctx *gin.Context) {
-	var req struct {
-		Name string `json:"name" binding:"required,min=3"`
-	}
+func (s *Server) CreateGenre(ctx *gin.Context) {
+	var req createGenreRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	genre, err := server.store.CreateGenre(ctx, req.Name)
+	genre, err := s.store.CreateGenre(ctx, req.Name)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, newGenreResponse(genre))
+	ctx.JSON(http.StatusCreated, genre)
 }
 
-func (server *Server) GetGenre(ctx *gin.Context) {
-	var uri struct {
-		ID int64 `uri:"id" binding:"required"`
-	}
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	genre, err := server.store.GetGenre(ctx, uri.ID)
+func (s *Server) GetGenre(ctx *gin.Context) {
+	id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	genre, err := s.store.GetGenre(ctx, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "genre not found"})
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Genre not found"})
 		return
 	}
-	ctx.JSON(http.StatusOK, newGenreResponse(genre))
+	ctx.JSON(http.StatusOK, genre)
 }
 
-func (server *Server) ListGenres(ctx *gin.Context) {
-	// var query struct {
-	// 	Limit  int32 `form:"limit" binding:"required,gte=1"`
-	// 	Offset int32 `form:"offset" binding:"required,gte=0"`
-	// }
-	// if err := ctx.ShouldBindQuery(&query); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// params := db.ListGenresParams{
-	// 	Limit:  query.Limit,
-	// 	Offset: query.Offset,
-	// }
-
-	genres, err := server.store.ListGenres(ctx)
+func (s *Server) ListGenres(ctx *gin.Context) {
+	genres, err := s.store.ListGenres(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	res := make([]genreResponse, len(genres))
-	for i, g := range genres {
-		res[i] = newGenreResponse(g)
-	}
-	ctx.JSON(http.StatusOK, res)
+	ctx.JSON(http.StatusOK, genres)
 }
 
-func (server *Server) UpdateGenre(ctx *gin.Context) {
-	var req struct {
-		ID   int64  `json:"id" binding:"required"`
-		Name string `json:"name" binding:"required,min=3"`
-	}
+func (s *Server) UpdateGenre(ctx *gin.Context) {
+	id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	var req updateGenreRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	genre, err := server.store.UpdateGenre(ctx, db.UpdateGenreParams{
-		ID:   req.ID,
-		Name: req.Name,
-	})
+	var updateParams db.UpdateGenreParams
+	updateParams.ID = id
+	updateParams.Name = req.Name
+	genre, err := s.store.UpdateGenre(ctx, updateParams)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, newGenreResponse(genre))
+	ctx.JSON(http.StatusOK, genre)
 }
 
-func (server *Server) DeleteGenre(ctx *gin.Context) {
-	var uri struct {
-		ID int64 `uri:"id" binding:"required"`
-	}
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := server.store.DeleteGenre(ctx, uri.ID); err != nil {
+func (s *Server) DeleteGenre(ctx *gin.Context) {
+	id, _ := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err := s.store.DeleteGenre(ctx, id); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "genre deleted"})
+	ctx.Status(http.StatusNoContent)
 }

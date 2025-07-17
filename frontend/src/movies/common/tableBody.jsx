@@ -9,7 +9,6 @@ import { Link } from 'react-router'
 class TableBody extends Component {
     renderCell = (item, column) => {
         if (column.content) return column.content(item)
-        // console.log(item)
         if (column.path === "title") {
             let path = "/movies/" + _.get(item, "id")
             return <Link to={path} >{_.get(item, column.path)}</Link>
@@ -18,7 +17,8 @@ class TableBody extends Component {
         
     }
     render() { 
-        const {data,columns} = this.props
+        const {user,data,columns} = this.props
+        console.log(data)
         return (
             <tbody>
                 {data.map(item => <tr key={item.id}>{columns.map(column =><td key={ item.id + (column.path || column.key)}>{this.renderCell(item,column)}</td>)}</tr>)}

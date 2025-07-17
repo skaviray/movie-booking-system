@@ -7,13 +7,16 @@ import Select from './common/select'
 import { useNavigate } from 'react-router'
 import { addMovie } from '../services/movieService'
 import { toast } from 'react-toastify'
+import DatePicker from 'react-datepicker';
 export default function  MovieForm() {
     const [data, setData] = useState({
         "title": "",
-        "genre": "",
-        "numberInStock": "",
-        "rent": ""
+        "description": "",
+        "duration_minutes": "",
+        "language": "",
+        "genre": ""
     })
+    const [releaseDate, setReleaseDate] = useState(new Date());
     const [loading, setLoading] = useState(true)
     const [genres, setGenres] = useState([])
     const [errors, setErrors] = useState({})
@@ -30,12 +33,14 @@ export default function  MovieForm() {
     }, [])
     if (loading) return <div>Loading...</div>
     const genreList  = genres.map(item => item.name.toLocaleLowerCase())
-
+    console.log(genreList)
     schema = {
       title: Joi.string().required().label("Title"),
+      description: Joi.string().required().label("Description"),
       genre: Joi.string().valid(genreList).required().label("Genre"),
-      numberInStock: Joi.number().integer().required().label("Number in Stock"),
-      rent: Joi.number().required().label("Rent Value"),
+      duration_minutes: Joi.number().integer().required().label("DurationMinutes"),
+      language: Joi.string().required().label("Language")
+      // release_date: Joi.date().required().label("Release Date"),
     }
     const validate = () => {
       const result = Joi.validate(data, schema, {abortEarly: false})
@@ -70,9 +75,11 @@ export default function  MovieForm() {
       console.log(genre)
       const movie = {
         title: data.title,
-        genre_id: genre.id,
-        number_in_stock: Number(data.numberInStock),
-        daily_rental_rate: Number(data.rent)
+        description: data.description,
+        duration_minutes: Number(data.duration_minutes),
+        language: data.language,
+        release_date: releaseDate,
+        genre_id: genre.id
       }
       console.log(movie)
       await addMovie(movie)
@@ -104,13 +111,21 @@ export default function  MovieForm() {
     }))
     }
   return (
-    <div>
+    <div className="mb-3">
         <h1>Movies Form</h1>
         <form onSubmit={handleSubmit}>
             <Input name="title" label="Tittle" value={data.username} type="text" errors={errors} onChange={handleChange} />
+            <Input name="description" label="Description" value={data.description} type="text" errors={errors} onChange={handleChange} />
+            <Input name="language" label="Language" value={data.language} type="text" errors={errors} onChange={handleChange} />
+            <Input name="duration_minutes" label="DurationMinutes" value={data.duration_minutes} type="text" errors={errors} onChange={handleChange} />
             <Select name="genre"  label="Genre" value={data.genre} items={genres} errors={errors} onChange={handleChange} />
-            <Input name="numberInStock" label="Number in Stock" value={data.numberInStock} type="text" errors={errors} onChange={handleChange} />
-            <Input name="rent" label="Rate" value={data.rent} type="text" errors={errors} onChange={handleChange} />
+            <label className="form-label">ReleaseDate:</label>
+              <DatePicker
+                selected={releaseDate}
+                onChange={(date) => setReleaseDate(date)}
+                className="form-control"
+                dateFormat="yyyy-MM-dd"
+              />
             <button className="btn btn-primary" disabled={validate()}>Save</button>
         </form> 
     </div>

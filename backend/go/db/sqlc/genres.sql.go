@@ -37,7 +37,7 @@ func (q *Queries) DeleteGenre(ctx context.Context, id int64) error {
 }
 
 const getGenre = `-- name: GetGenre :one
-SELECT id, name, created_at, updated_at FROM genres WHERE id = $1 LIMIT 1
+SELECT id, name, created_at, updated_at FROM genres WHERE id = $1
 `
 
 func (q *Queries) GetGenre(ctx context.Context, id int64) (Genre, error) {
@@ -86,7 +86,6 @@ func (q *Queries) ListGenres(ctx context.Context) ([]Genre, error) {
 }
 
 const updateGenre = `-- name: UpdateGenre :one
-
 UPDATE genres
 SET name = $2
 WHERE id = $1
@@ -98,7 +97,6 @@ type UpdateGenreParams struct {
 	Name string `json:"name"`
 }
 
-// LIMIT $1 OFFSET $2;
 func (q *Queries) UpdateGenre(ctx context.Context, arg UpdateGenreParams) (Genre, error) {
 	row := q.db.QueryRowContext(ctx, updateGenre, arg.ID, arg.Name)
 	var i Genre
