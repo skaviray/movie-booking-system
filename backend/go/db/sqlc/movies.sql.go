@@ -11,14 +11,17 @@ import (
 )
 
 const createMovie = `-- name: CreateMovie :one
-INSERT INTO movies (title, description, duration_minutes, language, genre_id, release_date)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at
+INSERT INTO movies (title, description,poster,likes,trailer, duration_minutes, language, genre_id, release_date)
+VALUES ($1, $2, $3, $4, $5, $6,$7,$8,$9)
+RETURNING id, title, description, poster, likes, trailer, duration_minutes, language, genre_id, release_date, created_at, updated_at
 `
 
 type CreateMovieParams struct {
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
+	Poster          string    `json:"poster"`
+	Likes           int32     `json:"likes"`
+	Trailer         string    `json:"trailer"`
 	DurationMinutes int32     `json:"duration_minutes"`
 	Language        string    `json:"language"`
 	GenreID         int32     `json:"genre_id"`
@@ -29,6 +32,9 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 	row := q.db.QueryRowContext(ctx, createMovie,
 		arg.Title,
 		arg.Description,
+		arg.Poster,
+		arg.Likes,
+		arg.Trailer,
 		arg.DurationMinutes,
 		arg.Language,
 		arg.GenreID,
@@ -39,6 +45,9 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.Poster,
+		&i.Likes,
+		&i.Trailer,
 		&i.DurationMinutes,
 		&i.Language,
 		&i.GenreID,
@@ -59,7 +68,7 @@ func (q *Queries) DeleteMovie(ctx context.Context, id int64) error {
 }
 
 const getMovie = `-- name: GetMovie :one
-SELECT id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies WHERE id = $1
+SELECT id, title, description, poster, likes, trailer, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies WHERE id = $1
 `
 
 func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
@@ -69,6 +78,9 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.Poster,
+		&i.Likes,
+		&i.Trailer,
 		&i.DurationMinutes,
 		&i.Language,
 		&i.GenreID,
@@ -80,7 +92,7 @@ func (q *Queries) GetMovie(ctx context.Context, id int64) (Movie, error) {
 }
 
 const listMovies = `-- name: ListMovies :many
-SELECT id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies ORDER BY id
+SELECT id, title, description, poster, likes, trailer, duration_minutes, language, genre_id, release_date, created_at, updated_at FROM movies ORDER BY id
 `
 
 func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
@@ -96,6 +108,9 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 			&i.ID,
 			&i.Title,
 			&i.Description,
+			&i.Poster,
+			&i.Likes,
+			&i.Trailer,
 			&i.DurationMinutes,
 			&i.Language,
 			&i.GenreID,
@@ -120,7 +135,7 @@ const updateMovie = `-- name: UpdateMovie :one
 UPDATE movies
 SET title = $2, description = $3, duration_minutes = $4, language = $5, genre_id = $6, release_date = $7, updated_at = now()
 WHERE id = $1
-RETURNING id, title, description, duration_minutes, language, genre_id, release_date, created_at, updated_at
+RETURNING id, title, description, poster, likes, trailer, duration_minutes, language, genre_id, release_date, created_at, updated_at
 `
 
 type UpdateMovieParams struct {
@@ -148,6 +163,9 @@ func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.Poster,
+		&i.Likes,
+		&i.Trailer,
 		&i.DurationMinutes,
 		&i.Language,
 		&i.GenreID,

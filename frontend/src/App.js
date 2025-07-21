@@ -31,6 +31,7 @@ import GenresForm from './movies/genres/genresForm';
 import ShowTimesDashboard from './movies/showtimes/showTimesDashboard'
 import ShowTimeForm from './movies/showtimes/showTimeForm'
 import BookingDashboard from './movies/bookings/bookingDashboard';
+import GridView from './movies/common/grid';
 
 class App extends Component {
   state = {

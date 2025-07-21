@@ -41,8 +41,8 @@ func New(store db.Store, config utils.Config) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"}, // Adjust based on your frontend URL
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://localhost:3002"}, // Adjust based on your frontend URL
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

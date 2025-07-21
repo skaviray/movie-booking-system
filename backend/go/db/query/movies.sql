@@ -1,6 +1,6 @@
 -- name: CreateMovie :one
-INSERT INTO movies (title, description, duration_minutes, language, genre_id, release_date)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO movies (title, description,poster,likes,trailer, duration_minutes, language, genre_id, release_date)
+VALUES ($1, $2, $3, $4, $5, $6,$7,$8,$9)
 RETURNING *;
 
 -- name: GetMovie :one

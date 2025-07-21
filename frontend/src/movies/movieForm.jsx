@@ -12,6 +12,8 @@ export default function  MovieForm() {
     const [data, setData] = useState({
         "title": "",
         "description": "",
+        "poster": "",
+        "trailer": "",
         "duration_minutes": "",
         "language": "",
         "genre": ""
@@ -37,6 +39,8 @@ export default function  MovieForm() {
     schema = {
       title: Joi.string().required().label("Title"),
       description: Joi.string().required().label("Description"),
+      poster: Joi.string().uri().required().label("Poster"),
+      trailer: Joi.string().uri().required().label("Trailer"),
       genre: Joi.string().valid(genreList).required().label("Genre"),
       duration_minutes: Joi.number().integer().required().label("DurationMinutes"),
       language: Joi.string().required().label("Language")
@@ -76,6 +80,8 @@ export default function  MovieForm() {
       const movie = {
         title: data.title,
         description: data.description,
+        poster: data.poster,
+        trailer: data.trailer,
         duration_minutes: Number(data.duration_minutes),
         language: data.language,
         release_date: releaseDate,
@@ -116,6 +122,8 @@ export default function  MovieForm() {
         <form onSubmit={handleSubmit}>
             <Input name="title" label="Tittle" value={data.username} type="text" errors={errors} onChange={handleChange} />
             <Input name="description" label="Description" value={data.description} type="text" errors={errors} onChange={handleChange} />
+            <Input name="poster" label="Poster" value={data.poster} type="text" errors={errors} onChange={handleChange} />
+            <Input name="trailer" label="Trailer" value={data.trailer} type="text" errors={errors} onChange={handleChange} />
             <Input name="language" label="Language" value={data.language} type="text" errors={errors} onChange={handleChange} />
             <Input name="duration_minutes" label="DurationMinutes" value={data.duration_minutes} type="text" errors={errors} onChange={handleChange} />
             <Select name="genre"  label="Genre" value={data.genre} items={genres} errors={errors} onChange={handleChange} />

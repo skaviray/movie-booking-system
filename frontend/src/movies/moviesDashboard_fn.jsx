@@ -10,6 +10,7 @@ import { fetchGenres } from '../services/genreService';
 import { fetchMovies,deleteMovie } from '../services/movieService';
 import _ from "lodash";
 import { toast } from 'react-toastify';
+import MoviesGridView from "./common/grid";
 
 
 
@@ -131,7 +132,7 @@ export default function MoviesDashboard({user})  {
                     {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary me-2">Add</button>}
                     {/* {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary">DEL</button>} */}
                     </div>
-                    <MoviesTable
+                    <MoviesGridView
                     user={user}
                     movies={data}
                     sortColumn={sortColumn}
@@ -139,7 +140,7 @@ export default function MoviesDashboard({user})  {
                     onDelete={handleDelete}
                     onSort={handleOnSort}
                     onBook={handleBook}
-                    ></MoviesTable>
+                    ></MoviesGridView>
                     <Pagination className="pagination"
                     itemsCount={totalCount} 
                     pageSize={pageSize} 

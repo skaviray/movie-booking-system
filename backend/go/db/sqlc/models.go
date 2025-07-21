@@ -38,6 +38,9 @@ type Movie struct {
 	ID              int64     `json:"id"`
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
+	Poster          string    `json:"poster"`
+	Likes           int32     `json:"likes"`
+	Trailer         string    `json:"trailer"`
 	DurationMinutes int32     `json:"duration_minutes"`
 	Language        string    `json:"language"`
 	GenreID         int32     `json:"genre_id"`

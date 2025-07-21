@@ -51,6 +51,8 @@ A full-stack web application for managing and booking movie tickets — includin
 2. Update the **docker-compose.yaml** file to deploy all the frontend,backend and database properly.
 3. Create a deployment manifests for k8s.
 4. Create application architecture.
+5. Refactor the code.
+6. Add payment and seat selection features.
 
 ## Database Architecture
 

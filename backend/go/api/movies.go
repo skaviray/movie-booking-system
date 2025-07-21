@@ -13,6 +13,8 @@ import (
 type createMovieRequest struct {
 	Title           string    `json:"title" binding:"required"`
 	Description     string    `json:"description"`
+	Poster          string    `json:"poster" binding:"required,url"`
+	Trailer         string    `json:"trailer" binding:"required,url"`
 	DurationMinutes int32     `json:"duration_minutes" binding:"required"`
 	Language        string    `json:"language" binding:"required"`
 	GenreId         int32     `json:"genre_id" binding:"required"`
@@ -31,6 +33,9 @@ type updateMovieRequest struct {
 type movieResponse struct {
 	ID              int64     `json:"id"`
 	Title           string    `json:"title"`
+	Poster          string    `json:"poster"`
+	Trailer         string    `json:"trailer"`
+	Likes           int32     `json:"likes"`
 	GenreID         int32     `json:"genre_id"`
 	Description     string    `json:"description"`
 	DurationMinutes int32     `json:"duration_minutes"`
@@ -43,6 +48,9 @@ func newMovieResponse(m db.Movie) movieResponse {
 	return movieResponse{
 		ID:              m.ID,
 		Title:           m.Title,
+		Poster:          m.Poster,
+		Likes:           m.Likes,
+		Trailer:         m.Trailer,
 		GenreID:         m.GenreID,
 		Description:     m.Description,
 		DurationMinutes: m.DurationMinutes,
@@ -62,6 +70,8 @@ func (server *Server) CreateMovie(ctx *gin.Context) {
 	movie, err := server.store.CreateMovie(ctx, db.CreateMovieParams{
 		Title:           req.Title,
 		GenreID:         req.GenreId,
+		Poster:          req.Poster,
+		Trailer:         req.Trailer,
 		Description:     req.Description,
 		DurationMinutes: req.DurationMinutes,
 		Language:        req.Language,

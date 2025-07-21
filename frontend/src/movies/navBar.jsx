@@ -11,7 +11,7 @@ export default function NavBar({user}) {
     }
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-    <Link className="navbar-brand" to="/">Vidly</Link>
+    <Link className="navbar-brand" to="/">CinemaChuddam</Link>
     <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span className="navbar-toggler-icon"></span>
     </button>
