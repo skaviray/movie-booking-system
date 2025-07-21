@@ -10,6 +10,9 @@ export default function  ScreensForm() {
     const [data, setData] = useState({
         "theatre": "",
         "name": "",
+        "rows": "",
+        "cols": ""
+        // "selected_seats": []
     })
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(true)
@@ -18,6 +21,8 @@ export default function  ScreensForm() {
     schema = {
       theatre: Joi.string().required().label("Theatre"),
       name: Joi.string().required().label("Name"),
+      rows: Joi.number().required().label("Rows"),
+      cols: Joi.number().required().label("Columns"),
     }
     const validate = () => {
       const result = Joi.validate(data, schema, {abortEarly: false})
@@ -61,6 +66,9 @@ export default function  ScreensForm() {
       const screen = {
         name: data.name,
         theater_id: theatre.id,
+        rows: Number(data.rows),
+        cols: Number(data.cols)
+
       }
       await addScreen(screen)
       navigate("/screens")
@@ -97,6 +105,8 @@ export default function  ScreensForm() {
         <form onSubmit={handleSubmit}>
             <Input name="name" label="Name" value={data.city} type="text" errors={errors} onChange={handleChange} />
             <Select name="theatre"  label="Theatre" value={data.theatre} items={theatres} errors={errors} onChange={handleChange} />
+            <Input name="rows" label="Rows" value={data.rows} type="number" errors={errors} onChange={handleChange} />
+            <Input name="cols" label="Columns" value={data.cols} type="number" errors={errors} onChange={handleChange} />
             <button className="btn btn-primary" disabled={validate()}>Save</button>
         </form> 
     </div>

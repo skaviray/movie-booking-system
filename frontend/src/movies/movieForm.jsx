@@ -27,7 +27,7 @@ export default function  MovieForm() {
     useEffect(() => {
       const loadGenres = async () => {
         const fetchedGenres = await fetchGenres()
-        // const genreList  = fetchedGenres.map(item => item.name.toLocaleLowerCase())
+        const genreList  = fetchedGenres.map(item => item.name.toLocaleLowerCase())
         setGenres(fetchedGenres)
         setLoading(false)
       }
@@ -35,16 +35,6 @@ export default function  MovieForm() {
 
     }, [])
 
-    schema = {
-      title: Joi.string().required().label("Title"),
-      description: Joi.string().required().label("Description"),
-      poster: Joi.string().uri().required().label("Poster"),
-      trailer: Joi.string().uri().required().label("Trailer"),
-      genre: Joi.string().valid(genres).required().label("Genre"),
-      duration_minutes: Joi.number().integer().required().label("DurationMinutes"),
-      language: Joi.string().required().label("Language")
-      // release_date: Joi.date().required().label("Release Date"),
-    }
     const validate = () => {
       const result = Joi.validate(data, schema, {abortEarly: false})
       if (!result.error) return null
@@ -117,6 +107,17 @@ export default function  MovieForm() {
     }
   if (loading) return <div>Loading...</div>
   console.log(genres)
+    const genreList  = genres.map(item => item.name.toLocaleLowerCase())
+    schema = {
+      title: Joi.string().required().label("Title"),
+      description: Joi.string().required().label("Description"),
+      poster: Joi.string().uri().required().label("Poster"),
+      trailer: Joi.string().uri().required().label("Trailer"),
+      genre: Joi.string().valid(genreList).required().label("Genre"),
+      duration_minutes: Joi.number().integer().required().label("DurationMinutes"),
+      language: Joi.string().required().label("Language")
+    }
+
   return (
     <div className="mb-3">
         <h1>Movies Form</h1>

@@ -33,6 +33,7 @@ import ShowTimeForm from './movies/showtimes/showTimeForm'
 import BookingDashboard from './movies/bookings/bookingDashboard';
 import GridView from './movies/common/grid';
 import MovieUpdateForm from './movies/movies/moviesUpdateForm';
+import SeatLayout from './movies/seats/seatlaout';
 
 class App extends Component {
   state = {
@@ -57,6 +58,7 @@ class App extends Component {
         <NavBar user={user}/>
         <main className="container">
           <Routes>
+            <Route path="/seats" element={<SeatLayout/>} />
             <Route path="/login" element={<LoginForm/>} />
             <Route path="/logout" element={<Logout/>} />
             <Route path='/profile' element={<Profile user={user}/>} />
@@ -71,6 +73,7 @@ class App extends Component {
                      } />
             <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
             <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
+            <Route path='/screens/:id' exact element={<SeatLayout/>}/>
             <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
             <Route path='/theatres/new' 
                      element={

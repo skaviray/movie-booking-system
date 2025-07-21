@@ -53,6 +53,8 @@ type Screen struct {
 	ID        int64     `json:"id"`
 	TheaterID int32     `json:"theater_id"`
 	Name      string    `json:"name"`
+	Rows      int32     `json:"rows"`
+	Cols      int32     `json:"cols"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

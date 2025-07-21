@@ -68,18 +68,22 @@ func (server *Server) setupRouter() {
 		authRoutes.GET("/genres", server.ListGenres)
 		authRoutes.GET("/genres/:id", server.GetGenre)
 
-		// Seats Public Routes
-		// authRoutes.GET("/seats", server.lis)
-		authRoutes.GET("/seats/:id", server.GetSeat)
-
 		// Theatre public routes
 		// authRoutes.GET("/theaters/:id/seats", server.ListSeatsByTheater)
 		authRoutes.GET("/theaters/:id", server.GetTheater)
 		authRoutes.GET("/theatres", server.ListTheaters)
 
+		// Screens public routes
+		authRoutes.GET("/screens", server.ListScreens)
+		authRoutes.GET("/screens/:id", server.GetScreen)
+
 		// showtime public routes
 		authRoutes.GET("/showtimes", server.ListShowTimes)
 		authRoutes.GET("/showtimes/:id", server.GetShowTime)
+
+		// Seats Public Routes
+		authRoutes.POST("/seats", server.CreateSeat)
+		authRoutes.PUT("/seats", server.CreateSeat)
 	}
 
 	protected := router.Group("/api").Use(server.authMiddleware(), server.isAdmin())
@@ -118,12 +122,9 @@ func (server *Server) setupRouter() {
 	protected.DELETE("/theatres/:id", server.DeleteTheater)
 
 	//Seats Routes
-	protected.POST("/seats", server.CreateSeat)
-	protected.PUT("/seats/:id", server.UpdateSeatStatus)
+	protected.GET("/seats/:id", server.GetSeat)
 
 	//Screen Routes
-	protected.GET("/screens", server.ListScreens)
-	protected.GET("/screens/:id", server.GetScreen)
 	protected.POST("/screens", server.CreateScreen)
 	protected.PUT("/screens/:id", server.UpdateScreen)
 

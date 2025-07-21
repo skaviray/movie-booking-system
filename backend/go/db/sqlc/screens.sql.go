@@ -10,23 +10,32 @@ import (
 )
 
 const createScreen = `-- name: CreateScreen :one
-INSERT INTO screens (theater_id, name)
-VALUES ($1, $2)
-RETURNING id, theater_id, name, created_at, updated_at
+INSERT INTO screens (theater_id, name, rows, cols)
+VALUES ($1, $2, $3,$4)
+RETURNING id, theater_id, name, rows, cols, created_at, updated_at
 `
 
 type CreateScreenParams struct {
 	TheaterID int32  `json:"theater_id"`
 	Name      string `json:"name"`
+	Rows      int32  `json:"rows"`
+	Cols      int32  `json:"cols"`
 }
 
 func (q *Queries) CreateScreen(ctx context.Context, arg CreateScreenParams) (Screen, error) {
-	row := q.db.QueryRowContext(ctx, createScreen, arg.TheaterID, arg.Name)
+	row := q.db.QueryRowContext(ctx, createScreen,
+		arg.TheaterID,
+		arg.Name,
+		arg.Rows,
+		arg.Cols,
+	)
 	var i Screen
 	err := row.Scan(
 		&i.ID,
 		&i.TheaterID,
 		&i.Name,
+		&i.Rows,
+		&i.Cols,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -43,7 +52,7 @@ func (q *Queries) DeleteScreen(ctx context.Context, id int64) error {
 }
 
 const getScreen = `-- name: GetScreen :one
-SELECT id, theater_id, name, created_at, updated_at FROM screens WHERE id = $1
+SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens WHERE id = $1
 `
 
 func (q *Queries) GetScreen(ctx context.Context, id int64) (Screen, error) {
@@ -53,6 +62,8 @@ func (q *Queries) GetScreen(ctx context.Context, id int64) (Screen, error) {
 		&i.ID,
 		&i.TheaterID,
 		&i.Name,
+		&i.Rows,
+		&i.Cols,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -60,7 +71,7 @@ func (q *Queries) GetScreen(ctx context.Context, id int64) (Screen, error) {
 }
 
 const listScreens = `-- name: ListScreens :many
-SELECT id, theater_id, name, created_at, updated_at FROM screens ORDER BY id
+SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens ORDER BY id
 `
 
 func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
@@ -76,6 +87,8 @@ func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
 			&i.ID,
 			&i.TheaterID,
 			&i.Name,
+			&i.Rows,
+			&i.Cols,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -93,7 +106,7 @@ func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
 }
 
 const listScreensByTheater = `-- name: ListScreensByTheater :many
-SELECT id, theater_id, name, created_at, updated_at FROM screens WHERE theater_id = $1
+SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens WHERE theater_id = $1
 `
 
 func (q *Queries) ListScreensByTheater(ctx context.Context, theaterID int32) ([]Screen, error) {
@@ -109,6 +122,8 @@ func (q *Queries) ListScreensByTheater(ctx context.Context, theaterID int32) ([]
 			&i.ID,
 			&i.TheaterID,
 			&i.Name,
+			&i.Rows,
+			&i.Cols,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -129,7 +144,7 @@ const updateScreen = `-- name: UpdateScreen :one
 UPDATE screens
 SET name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, theater_id, name, created_at, updated_at
+RETURNING id, theater_id, name, rows, cols, created_at, updated_at
 `
 
 type UpdateScreenParams struct {
@@ -144,6 +159,8 @@ func (q *Queries) UpdateScreen(ctx context.Context, arg UpdateScreenParams) (Scr
 		&i.ID,
 		&i.TheaterID,
 		&i.Name,
+		&i.Rows,
+		&i.Cols,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

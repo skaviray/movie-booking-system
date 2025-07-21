@@ -9,30 +9,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createScreenRequest struct {
+type CreateScreenRequest struct {
 	TheatreId int64  `json:"theater_id" binding:"required"`
-	Name      string `json:"name"`
+	Name      string `json:"name" binding:"required"`
+	Rows      int32  `json:"rows" binding:"required"`
+	Cols      int32  `json:"cols" binding:"required"`
 }
 
-type screenResponse struct {
+type UpdateScreenRequest struct {
+	TheatreId int64  `json:"theater_id" binding:"required"`
+	Name      string `json:"name" binding:"required"`
+}
+
+type ScreenResponse struct {
 	ID        int64     `json:"id"`
 	TheatreId int32     `json:"theater_id"`
 	Name      string    `json:"name"`
+	Rows      int32     `json:"rows"`
+	Cols      int32     `json:"cols"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func newScreenResponse(s db.Screen) screenResponse {
-	return screenResponse{
+func newScreenResponse(s db.Screen) ScreenResponse {
+	return ScreenResponse{
 		ID:        s.ID,
 		TheatreId: s.TheaterID,
 		Name:      s.Name,
+		Rows:      s.Rows,
+		Cols:      s.Cols,
 		CreatedAt: s.CreatedAt,
 		UpdatedAt: s.UpdatedAt,
 	}
 }
 func (server *Server) CreateScreen(ctx *gin.Context) {
-	var req createScreenRequest
+	var req CreateScreenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -40,6 +51,8 @@ func (server *Server) CreateScreen(ctx *gin.Context) {
 	args := db.CreateScreenParams{
 		TheaterID: int32(req.TheatreId),
 		Name:      req.Name,
+		Rows:      req.Rows,
+		Cols:      req.Cols,
 	}
 	screen, err := server.store.CreateScreen(ctx, args)
 	if err != nil {
@@ -80,7 +93,7 @@ func (server *Server) ListScreens(ctx *gin.Context) {
 		return
 	}
 
-	responses := make([]screenResponse, len(screens))
+	responses := make([]ScreenResponse, len(screens))
 	for i, screen := range screens {
 		responses[i] = newScreenResponse(screen)
 	}
@@ -97,7 +110,7 @@ func (server *Server) UpdateScreen(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var req createScreenRequest
+	var req UpdateScreenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

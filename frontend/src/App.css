@@ -23,6 +23,54 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+.seat-layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.screen {
+  background-color: #ccc;
+  color: #333;
+  text-align: center;
+  padding: 8px 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  width: 60%;
+  font-weight: bold;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.seat-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.seat-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.seat {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #555;
+  background-color: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 38px;
+  font-weight: bold;
+}
+
+.seat.selected {
+  background-color: #4caf50;
+  color: white;
+}
+
 
 .App-link {
   color: #61dafb;

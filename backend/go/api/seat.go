@@ -16,7 +16,7 @@ type createSeatRequest struct {
 	Status   string `json:"status" binding:"required"` // available, reserved, booked
 }
 
-type updateSeatReq struct {
+type UpdateSeatReq struct {
 	Status string `json:"status" binding:"required"`
 }
 
