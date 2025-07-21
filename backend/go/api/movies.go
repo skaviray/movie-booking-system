@@ -23,6 +23,8 @@ type createMovieRequest struct {
 
 type updateMovieRequest struct {
 	Title           string    `json:"title"`
+	Poster          string    `json:"poster" binding:"required,url"`
+	Trailer         string    `json:"trailer" binding:"required,url"`
 	Description     string    `json:"description"`
 	DurationMinutes int32     `json:"duration_minutes"`
 	Language        string    `json:"language"`
@@ -40,6 +42,7 @@ type movieResponse struct {
 	Description     string    `json:"description"`
 	DurationMinutes int32     `json:"duration_minutes"`
 	Language        string    `json:"language"`
+	ReleaseData     time.Time `json:"release_data"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
@@ -57,6 +60,7 @@ func newMovieResponse(m db.Movie) movieResponse {
 		Language:        m.Language,
 		CreatedAt:       m.CreatedAt,
 		UpdatedAt:       m.UpdatedAt,
+		ReleaseData:     m.ReleaseDate,
 	}
 }
 
@@ -141,6 +145,8 @@ func (server *Server) UpdateMovie(ctx *gin.Context) {
 	movie, err := server.store.UpdateMovie(ctx, db.UpdateMovieParams{
 		ID:              uri.ID,
 		Title:           req.Title,
+		Poster:          req.Poster,
+		Trailer:         req.Trailer,
 		GenreID:         req.GenreId,
 		Language:        req.Language,
 		Description:     req.Description,

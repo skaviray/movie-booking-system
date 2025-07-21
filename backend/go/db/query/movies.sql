@@ -11,7 +11,7 @@ SELECT * FROM movies ORDER BY id;
 
 -- name: UpdateMovie :one
 UPDATE movies
-SET title = $2, description = $3, duration_minutes = $4, language = $5, genre_id = $6, release_date = $7, updated_at = now()
+SET title=$2, description=$3,poster=$4,likes=$5,trailer=$6, duration_minutes=$7, language=$8, genre_id=$9, release_date=$10, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

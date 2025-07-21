@@ -133,7 +133,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 
 const updateMovie = `-- name: UpdateMovie :one
 UPDATE movies
-SET title = $2, description = $3, duration_minutes = $4, language = $5, genre_id = $6, release_date = $7, updated_at = now()
+SET title=$2, description=$3,poster=$4,likes=$5,trailer=$6, duration_minutes=$7, language=$8, genre_id=$9, release_date=$10, updated_at = now()
 WHERE id = $1
 RETURNING id, title, description, poster, likes, trailer, duration_minutes, language, genre_id, release_date, created_at, updated_at
 `
@@ -142,6 +142,9 @@ type UpdateMovieParams struct {
 	ID              int64     `json:"id"`
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
+	Poster          string    `json:"poster"`
+	Likes           int32     `json:"likes"`
+	Trailer         string    `json:"trailer"`
 	DurationMinutes int32     `json:"duration_minutes"`
 	Language        string    `json:"language"`
 	GenreID         int32     `json:"genre_id"`
@@ -153,6 +156,9 @@ func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie
 		arg.ID,
 		arg.Title,
 		arg.Description,
+		arg.Poster,
+		arg.Likes,
+		arg.Trailer,
 		arg.DurationMinutes,
 		arg.Language,
 		arg.GenreID,

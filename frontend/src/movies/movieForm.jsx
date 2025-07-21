@@ -27,21 +27,20 @@ export default function  MovieForm() {
     useEffect(() => {
       const loadGenres = async () => {
         const fetchedGenres = await fetchGenres()
+        // const genreList  = fetchedGenres.map(item => item.name.toLocaleLowerCase())
         setGenres(fetchedGenres)
         setLoading(false)
       }
       loadGenres()
 
     }, [])
-    if (loading) return <div>Loading...</div>
-    const genreList  = genres.map(item => item.name.toLocaleLowerCase())
-    console.log(genreList)
+
     schema = {
       title: Joi.string().required().label("Title"),
       description: Joi.string().required().label("Description"),
       poster: Joi.string().uri().required().label("Poster"),
       trailer: Joi.string().uri().required().label("Trailer"),
-      genre: Joi.string().valid(genreList).required().label("Genre"),
+      genre: Joi.string().valid(genres).required().label("Genre"),
       duration_minutes: Joi.number().integer().required().label("DurationMinutes"),
       language: Joi.string().required().label("Language")
       // release_date: Joi.date().required().label("Release Date"),
@@ -116,6 +115,8 @@ export default function  MovieForm() {
       [name]: value
     }))
     }
+  if (loading) return <div>Loading...</div>
+  console.log(genres)
   return (
     <div className="mb-3">
         <h1>Movies Form</h1>

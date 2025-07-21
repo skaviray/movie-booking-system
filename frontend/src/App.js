@@ -32,6 +32,7 @@ import ShowTimesDashboard from './movies/showtimes/showTimesDashboard'
 import ShowTimeForm from './movies/showtimes/showTimeForm'
 import BookingDashboard from './movies/bookings/bookingDashboard';
 import GridView from './movies/common/grid';
+import MovieUpdateForm from './movies/movies/moviesUpdateForm';
 
 class App extends Component {
   state = {
@@ -68,7 +69,7 @@ class App extends Component {
                         {<MovieForm user={this.state.user} />}
                       </RequireAuth>
                      } />
-            <Route path='/movies/:id' exact element={<MoviesDetails/>}/>
+            <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
             <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
             <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
             <Route path='/theatres/new' 
