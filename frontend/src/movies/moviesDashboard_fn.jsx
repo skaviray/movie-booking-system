@@ -111,20 +111,19 @@ export default function MoviesDashboard({user})  {
     console.log(user)
     if (loading) return null
     return (
-            <div className='row'>
-                <div className="col-2">
+            <div className='row movies-dashboard'>
+                <div className="col-2 list-group">
                     <ListGroup 
                     items={genres} 
                     currentGenre={selectedGenre} 
                     onSelectGenre={handleGenreSelect}></ListGroup>
                 </div>
-                <div className="col">
-                    <p>Showing {totalCount} movies from the database</p>
+                <div className="col list-group movies-grid-layout">
                     <div className="d-flex align-items-center mb-3">
                     <input 
                     autoFocus
                     type="text" 
-                    className="form-control me-2" 
+                    className="form-control me-2 searchbox" 
                     placeholder="Search Movies ..." 
                     // name='search' 
                     value={searchString} 
@@ -133,6 +132,7 @@ export default function MoviesDashboard({user})  {
                     {/* {user && user.is_admin && <button onClick={handleNewMovie} className="btn btn-primary">DEL</button>} */}
                     </div>
                     <MoviesGridView
+                    className=''
                     user={user}
                     movies={data}
                     sortColumn={sortColumn}

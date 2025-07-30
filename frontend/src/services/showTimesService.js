@@ -8,6 +8,12 @@ export const fetchShowTimes = async () => {
   return response.data;
 }
 
+export const fetchShowTimeById = async (id) => {
+    const endpoint = showtimeEndpoint + '/' + id
+  const response = await http.get(endpoint);
+  return response.data;
+}
+
 export const addShowTime = async (show) => {
   const response = await http.post(showtimeEndpoint, show);
   return response.data;

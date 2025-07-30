@@ -118,41 +118,41 @@ class MoviesDashboard extends Component {
         const { movies: allMovies, pageSize, currentPage, selectedGenre,sortColumn } = this.state
         const {totalCount,data} = this.getPagedData()
         return (
-            <div className='row'>
-                <div className="col-2">
-                    <ListGroup 
-                    items={this.state.genres} 
-                    currentGenre={selectedGenre} 
-                    onSelectGenre={this.handleGenreSelect}></ListGroup>
+                <div className="row movies-dashboard">
+                    <div >
+                        <ListGroup
+                        items={this.state.genres}
+                        currentGenre={selectedGenre}
+                        onSelectGenre={this.handleGenreSelect}></ListGroup>
+                    </div>
+                    <div className="col">
+                        <button onClick={this.handleNewMovie} className="btn btn-primary btn-sm">New Movie</button>
+                        <p>Showing {data.length} movies from the database</p>
+                        {/* <label for="exampleFormControlInput1" className="form-label">Search</label> */}
+                        <input
+                        autoFocus
+                        type="text"
+                        className="form-control mb-3"
+                        placeholder="Search Movies ..."
+                        // name='search'
+                        value={this.state.searchString}
+                        onChange={this.handleSearch}/>
+                        <MoviesTable
+                        user= {user}
+                        movies={data}
+                        sortColumn={sortColumn}
+                        onLike={this.handleLike}
+                        onDelete={this.handleDelete}
+                        onSort={this.handleOnSort}
+                        ></MoviesTable>
+                        <Pagination className="pagination"
+                        itemsCount={totalCount}
+                        pageSize={pageSize}
+                        onPageChange={this.handlePageChange}
+                        currentPage={currentPage}
+                        />
+                    </div>
                 </div>
-                <div className="col">
-                    <button onClick={this.handleNewMovie} className="btn btn-primary btn-sm">New Movie</button>
-                    <p>Showing {data.length} movies from the database</p>
-                    {/* <label for="exampleFormControlInput1" className="form-label">Search</label> */}
-                    <input 
-                    autoFocus
-                    type="text" 
-                    className="form-control mb-3" 
-                    placeholder="Search Movies ..." 
-                    // name='search' 
-                    value={this.state.searchString} 
-                    onChange={this.handleSearch}/>
-                    <MoviesTable
-                    user= {user}
-                    movies={data}
-                    sortColumn={sortColumn}
-                    onLike={this.handleLike}
-                    onDelete={this.handleDelete}
-                    onSort={this.handleOnSort}
-                    ></MoviesTable>
-                    <Pagination className="pagination"
-                    itemsCount={totalCount} 
-                    pageSize={pageSize} 
-                    onPageChange={this.handlePageChange} 
-                    currentPage={currentPage} 
-                    />
-                </div>
-            </div>
         )
     }
 }

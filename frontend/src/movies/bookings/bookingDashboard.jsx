@@ -50,11 +50,11 @@ export default function BookingDashboard() {
     },[id])
   useEffect(() => {
     const grouped = {};
-    allshowTimes.forEach(({ theater_name, start_time, screen_id }) => {
+    allshowTimes.forEach(({ theater_name, start_time, screen_id, showtime_id }) => {
       const showDate = start_time.slice(0, 10); // YYYY-MM-DD
       if (showDate === selectedDate) {
         if (!grouped[theater_name]) grouped[theater_name] = [];
-        grouped[theater_name].push({ start_time, screen_id });
+        grouped[theater_name].push({ start_time, screen_id, showtime_id });
       }
     });
     setFilteredShowtimes(grouped);
@@ -62,8 +62,8 @@ export default function BookingDashboard() {
     if (loading) return null
     console.log(groupedShowtimes)
   return (
-    <div>
-      <div style={{ display: 'flex', overflowX: 'auto', marginBottom: '20px' }}>
+    <div className='bookings-dashboard' >
+      <div className='datepicker'>
         {upcomingDates.map((date) => {
           const iso = date.toISOString().slice(0, 10);
           const label =
@@ -88,7 +88,7 @@ export default function BookingDashboard() {
           );
         })}
       </div>
-      <table className="table table-bordered table-stripe">
+      <table className="table table-bordered table-stripe bookings-table">
         <thead>
           <tr>
             <th>Theater</th>
@@ -100,9 +100,9 @@ export default function BookingDashboard() {
             <tr key={theater}>
               <td>{theater}</td>
               <td>
-                {times.map(({ start_time, screen_id }, idx) => (
+                {times.map(({ start_time, screen_id, showtime_id }, idx) => (
                   <Link
-                    to={`/screens/${screen_id}`}
+                    to={`/movies/${id}/screens/${screen_id}/${showtime_id}`}
                     key={idx}
                     style={{ marginRight: '10px', display: 'inline-block' }}
                   >

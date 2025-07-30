@@ -34,7 +34,7 @@ import BookingDashboard from './movies/bookings/bookingDashboard';
 import GridView from './movies/common/grid';
 import MovieUpdateForm from './movies/movies/moviesUpdateForm';
 import SeatLayout from './movies/seats/seatlaout';
-
+import AdminNavbar from './movies/admin/navBar';
 class App extends Component {
   state = {
     user: {},
@@ -53,95 +53,97 @@ class App extends Component {
     console.log(user)
     if (this.loading) return null
     return (
-       <React.Fragment>
-       <ToastContainer />
-        <NavBar user={user}/>
-        <main className="container">
-          <Routes>
-            <Route path="/seats" element={<SeatLayout/>} />
-            <Route path="/login" element={<LoginForm/>} />
-            <Route path="/logout" element={<Logout/>} />
-            <Route path='/profile' element={<Profile user={user}/>} />
-            <Route path="/register" element={<RegisterForm/>} />
-            <Route path='/movies' element={<MoviesDashboard key={user?.username || "guest"} user={user}/>} />
-  
-            <Route path='/movies/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<MovieForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-            <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
-            <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
-            <Route path='/screens/:id' exact element={<SeatLayout/>}/>
-            <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
-            <Route path='/theatres/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<TheatreForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-
-            <Route path='/locations/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<LocationsForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             
-             <Route path='/locations' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<LocationsDashboard user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             <Route path='/screens' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<ScreensDashboard user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-
-             <Route path='/screens/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<ScreensForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             <Route path='/genres' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<GenresDashboard user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             <Route path='/genres/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<GenresForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             <Route path='/showtimes' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<ShowTimesDashboard user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-             <Route path='/showtimes/new' 
-                     element={
-                      <RequireAuth user={this.state.user}>
-                        {<ShowTimeForm user={this.state.user} />}
-                      </RequireAuth>
-                     } />
-            <Route path='/customers' element={<Customers/>}/>
-            <Route path='/rentals' element={<Rentals/>}/>
-            <Route path='/' exact element={<MoviesDashboard/>}/>
-            {/* <Route path="/not-found" element={<NotFound/>} /> */}
-            <Route path='*' element={<NotFound/>}/>
-          </Routes>
-        </main>
-       </React.Fragment>
-
-      // <MoviesDashboard></MoviesDashboard>
+       <div className='super-container'>
+        <div className='header'>
+          <div className='nav-bar-menu'>
+            <NavBar user={user}/>
+            { user && user.is_admin && <AdminNavbar />}
+            <ToastContainer />
+          </div>
+        </div>
+        <div className='main'>
+            <Routes>
+              <Route path="/seats" element={<SeatLayout/>} />
+              <Route path="/login" element={<LoginForm/>} />
+              <Route path="/logout" element={<Logout/>} />
+              <Route path='/profile' element={<Profile user={user}/>} />
+              <Route path="/register" element={<RegisterForm/>} />
+              <Route path='/movies' element={<MoviesDashboard key={user?.username || "guest"} user={user}/>} />
+              <Route path='/movies/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<MovieForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+              <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
+              <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
+              <Route path='/movies/:id/screens/:screen_id/:showtime_id' exact element={<SeatLayout/>}/>
+              <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
+              <Route path='/theatres/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<TheatreForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+              <Route path='/locations/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<LocationsForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+         
+               <Route path='/locations'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<LocationsDashboard user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/screens'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<ScreensDashboard user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/screens/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<ScreensForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/genres'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<GenresDashboard user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/genres/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<GenresForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/showtimes'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<ShowTimesDashboard user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+               <Route path='/showtimes/new'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<ShowTimeForm user={this.state.user} />}
+                        </RequireAuth>
+                       } />
+              <Route path='/customers' element={<Customers/>}/>
+              <Route path='/rentals' element={<Rentals/>}/>
+              <Route path='/' exact element={<MoviesDashboard/>}/>
+              {/* <Route path="/not-found" element={<NotFound/>} /> */}
+              <Route path='*' element={<NotFound/>}/>
+            </Routes>
+        </div>
+        <div className='footer'>
+        </div>
+       </div>
     );
   }
 }

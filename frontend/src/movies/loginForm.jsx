@@ -44,16 +44,9 @@ export default function LoginForm() {
         setErrors(validationErrors || {})
         try {
           const {data: response, headers} = await auth.loginUser(account)
-          // console.log(response)
-          // setAccessToken(response.access_token)
-          // console.log(response,headers)
-          // localStorage.setItem("x-auth-token", headers['x-auth-token'])
-
           window.location = from
-          // navigate(from, { replace: true })
         } catch(ex) {
           if (ex.response && (ex.response.status === 400 || ex.response.status === 401)){
-            // setErrors({username: `user ${account.username} does not exist, please register...`})
             setErrors({email: ex.response.data.error})
           } 
       }
@@ -76,12 +69,16 @@ export default function LoginForm() {
     }))
     }
   return (
-    <div>
-        <h1>Login</h1>
-        <form onSubmit={handleSubmit}>
-            <Input name="email" label="Email" value={account.email} type="text" errors={errors} onChange={handleChange} />
-            <Input name="password" label="Password" value={account.password} type="password" errors={errors} onChange={handleChange} />
-            <button className="btn btn-primary" disabled={validate()}>Login</button>
+    <div className='loginForm'>
+        <form onSubmit={handleSubmit} className='form'>
+           <img src='/eww.png' className='login-form-image' />
+            <div className='login-form-input'>
+              <Input  name="email" label="Email" value={account.email} type="text" errors={errors} onChange={handleChange} />
+            </div>
+            <div className='login-form-input'>
+              <Input  name="password" label="Password" value={account.password} type="password" errors={errors} onChange={handleChange} />
+              </div>
+            <button className="btn btn-primary login-form-button" disabled={validate()}>Login</button>
         </form>
     </div>
   )

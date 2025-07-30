@@ -1,23 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { fetchScreenWithId } from "../../services/screensService";
+import { fetchShowTimes,fetchShowTimeById } from "../../services/showTimesService";
 
 export default function SeatLayout() {
-    const {id} = useParams()
-    // const [screen,setScreen] = useState({})
+    const {id,screen_id,showtime_id } = useParams()
     const [loading,setLoading] = useState(true)
+    const [showTime, setShowTime] = useState({})
+    const [selectedSeats, setSelectedSeats] = useState([])
     const [seatLayout,setSeatLayout] = useState({})
     useEffect(() => {
       const loadScreen = async () => {
           const fetchedScreen = await fetchScreenWithId(id)
+          const fetchedShowTime = await fetchShowTimeById(id)
           setSeatLayout(fetchedScreen)
+          setShowTime(fetchedShowTime)
           setLoading(false)
       }
       loadScreen()
     },[])
-    const selectedSeats = ['F1',"F2"]
+    // const selectedSeats = ['F1',"F2"]
     const onSelect = (seatId) => {
         console.log("selected", seatId)
+        // const selected = 
+        setSelectedSeats([...selectedSeats,seatId])
     }
   const renderSeats = () => {
     const layout = [];
@@ -46,8 +52,12 @@ export default function SeatLayout() {
     return layout;
   };
   if (loading) return null
+  console.log(selectedSeats)
+  console.log(screen_id,showtime_id)
+  console.log(showTime)
   return (<div className="seat-layout-wrapper">
       <div className="seat-layout">{renderSeats()}</div>
-      <div className="screen " >SCREEN</div>
+      <div className="screen " >All eyes this way please</div>
+      {selectedSeats.length > 0  && <button className="pay-button">Pay {selectedSeats.length*showTime.price}</button>}
     </div>)
 }
