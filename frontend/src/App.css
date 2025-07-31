@@ -27,8 +27,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
+  /* height: 100%; */
   width: 100%;
+  border-radius: 10px;
+  background-color: lightgrey;
+  margin: 6px 20px 6px 6px;
 }
 
 .screen {
@@ -239,5 +242,92 @@
 
 .pay-button {
   margin: 50px;
-  width: 30%
+  width: 30%;
+  
+}
+
+.customer-details {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: 30px auto;
+  width: 60%;
+  flex-wrap: wrap; 
+}
+
+.customer-details-input {
+  width: 400px;
+  /* margin: 20px 30px; */
+}
+
+
+.seatlayout-supercontainer{
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: row;
+}
+
+.seatlayout-summary {
+  width: 40%;
+  border-radius: 10px;
+  background-color: lightgrey;
+  margin: 6px 20px 6px  0px;
+}
+
+.order-summary-wrapper {
+  font-family: 'Roboto', sans-serif;
+  padding: 20px;
+  max-width: 700px;
+  color: #1a1a1a;
+  border-radius: 8px;
+}
+
+.order-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.order-title {
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+}
+
+.ticket-count {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0b0c10;
+}
+
+.ticket-count span {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  font-weight: 400;
+}
+
+.movie-title {
+  font-weight: 500;
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: #0b0c10;
+}
+
+.movie-certification,
+.theater-info,
+.ticket-type,
+.ticket-details,
+.show-date,
+.show-time {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
 }

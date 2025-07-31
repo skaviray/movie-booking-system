@@ -12,25 +12,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/razorpay/razorpay-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Server struct {
-	config     utils.Config
-	store      db.Store
-	tokenMaker token.Maker
-	router     *gin.Engine
+	config         utils.Config
+	store          db.Store
+	tokenMaker     token.Maker
+	razorPayClient *razorpay.Client
+	router         *gin.Engine
 }
 
 func New(store db.Store, config utils.Config) (*Server, error) {
 	maker, err := token.NewPasetoMaker(config.SecretKey)
+	razorPayClient := razorpay.NewClient(config.RazorpayKey, config.RazorpaySecret)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create token maker: %c", err)
 	}
 	server := &Server{
-		config:     config,
-		store:      store,
-		tokenMaker: maker,
+		config:         config,
+		store:          store,
+		tokenMaker:     maker,
+		razorPayClient: razorPayClient,
 	}
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
@@ -84,6 +88,10 @@ func (server *Server) setupRouter() {
 		// Seats Public Routes
 		authRoutes.POST("/seats", server.CreateSeat)
 		authRoutes.PUT("/seats", server.CreateSeat)
+
+		// Payment routes
+		authRoutes.POST("/create-order", server.CreateOrder)
+		authRoutes.POST("/verify-payment", server.VerifySignature)
 	}
 
 	protected := router.Group("/api").Use(server.authMiddleware(), server.isAdmin())

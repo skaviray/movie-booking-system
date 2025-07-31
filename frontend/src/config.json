@@ -1,3 +1,4 @@
 {
-    "apiEndpoint": "http://localhost:8080"
+    "apiEndpoint": "http://localhost:8080",
+    "razorpayKEY": "rzp_test_rQVuAeAIedaBUy"
 }

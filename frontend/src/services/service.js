@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const axiosInstance = axios.create({
-  baseURL: 'https://jsonplaceholder.typicode.com'
+  
 });
 
 const setToken = (token) => {

@@ -10,12 +10,14 @@ import (
 )
 
 type Config struct {
-	DBDriver      string        `mapstructure:"DB_DRIVER"`
-	DBSource      string        `mapstructure:"DB_SOURCE"`
-	ListenAddress string        `mapstructure:"LISTEN_ADDRESS"`
-	SecretKey     string        `mapstructure:"SECRET_KEY"`
-	Duration      time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RequireAuth   bool          `mapstructure:"REQUIRE_AUTH"`
+	DBDriver       string        `mapstructure:"DB_DRIVER"`
+	DBSource       string        `mapstructure:"DB_SOURCE"`
+	ListenAddress  string        `mapstructure:"LISTEN_ADDRESS"`
+	SecretKey      string        `mapstructure:"SECRET_KEY"`
+	Duration       time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RequireAuth    bool          `mapstructure:"REQUIRE_AUTH"`
+	RazorpayKey    string        `mapstructure:"RAZORPAY_KEY"`
+	RazorpaySecret string        `mapstructure:"RAZORPAY_SECRET"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
