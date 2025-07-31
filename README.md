@@ -60,6 +60,8 @@ A full-stack web application for managing and booking movie tickets — includin
 
 ## Application Architecture
 
+![alt text](Architecture.svg)
+
 ## Building container Images
 
 ### Frontend
