@@ -3,7 +3,7 @@ postgres-setup:
 	docker-compose up -d
 
 create-container-image:
-	docker build -t vidly-backend .
+	docker build --no-cache -t vidly-backend .
 
 remove-image:
 	docker rmi  vidly-backend

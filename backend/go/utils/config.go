@@ -48,7 +48,7 @@ func LoadConfig(path string) (config Config, err error) {
 	}
 	keys := []string{
 		"DB_DRIVER", "DB_SOURCE", "LISTEN_ADDRESS",
-		"SECRET_KEY", "ACCESS_TOKEN_DURATION", "REQUIRE_AUTH",
+		"SECRET_KEY", "ACCESS_TOKEN_DURATION", "REQUIRE_AUTH", "RAZORPAY_KEY", "RAZORPAY_SECRET",
 	}
 	for _, key := range keys {
 		if err := viper.BindEnv(key); err != nil {

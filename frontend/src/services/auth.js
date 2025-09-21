@@ -16,6 +16,7 @@ export const loginUser = async (user) => {
     }
     const {data: response,headers } = await http.post(loginEndpoint, obj)
     localStorage.setItem(tokenKey, headers[tokenKey])
+    http.setToken(getToken())
     console.log(localStorage.getItem(tokenKey))
     return response
 }
@@ -35,7 +36,7 @@ export const getToken = () => {
     return localStorage.getItem(tokenKey)
 }
 
-http.setToken(getToken())
+
 
 export const logout = () => {
     localStorage.removeItem(tokenKey)

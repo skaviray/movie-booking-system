@@ -34,6 +34,19 @@
   margin: 6px 20px 6px 6px;
 }
 
+.funky-badge {
+  /* background-color: red; */
+  color: white;
+  padding: 6px 18px;
+  border-radius: 20px; /* pill style */
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .screen {
   background-color: #ccc;
   color: #333;

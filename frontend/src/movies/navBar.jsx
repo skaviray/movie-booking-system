@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router'
+import {Film, CameraVideo} from 'react-bootstrap-icons'
 
 export default function NavBar({user}) {
     // const {user} = props
@@ -21,21 +22,16 @@ export default function NavBar({user}) {
     }
   return (
     <div className='nav-bar'>
-    <Link className="navbar-brand" to="/">Eww!</Link>
-    {/* {user && (
-    <div className="dropdown">
-        <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"  aria-haspopup="true" aria-expanded="false">
-            Dropdown button
-        </button>
-        <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <NavLink className="nav-link" to="/logout">Log out</NavLink>
-            <NavLink className="nav-link" to="/profile">{user.username}</NavLink>
-        </div>
-    </div>
-)} */}
+
+    <div>
+        <Link className="navbar-brand funky-badge" to="/">
+        <CameraVideo size={40} color="black" />
+        Eww!
+        </Link>
+  </div>
     {user && ( <button type="button" className="btn btn-success logout">Profile</button>)}
-    {user && ( <button type="button" className="btn btn-success logout" onClick={handleLogOut}>Log out</button>)}
-    {!user && ( <button type="button" className="btn btn-success logout" onClick={handleSignIn}>Sign in</button>)}
+    {user && ( <button type="button" className="btn btn-success logout" onClick={handleLogOut}>Logout</button>)}
+    {!user && ( <button type="button" className="btn btn-success logout" onClick={handleSignIn}>Login</button>)}
     </div>
   )
 }

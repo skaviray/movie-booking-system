@@ -6,6 +6,9 @@ remove-image:
 	docker rmi  vidly-frontend
 
 create-container-image:
+	rm -rf build/
+	npm run build
+	docker rmi vidly-frontend
 	docker build -t vidly-frontend .
 
 start-container:

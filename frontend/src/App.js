@@ -3,7 +3,6 @@ import './App.css';
 import MoviesDashboard from './movies/moviesDashboard_fn';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from './front-end-components/sidebar';
-// import NavBar from './components/navbar';
 import NavBar from './movies/navBar';
 import { Routes, Route } from 'react-router-dom';
 
@@ -37,16 +36,12 @@ import SeatLayout from './movies/seats/seatlaout';
 import AdminNavbar from './movies/admin/navBar';
 class App extends Component {
   state = {
-    user: {},
+    user: null,
     loading: true
   }
   async componentDidMount() { 
     const user = await auth.getCurrentUser()
-    // this.setState({user}, () => {
-    //   console.log(this.state)
-    // })
     this.setState({user: user, loading: false})
-    // this.setState({loading: false})
    }
   render() { 
     const {user} = this.state
@@ -57,14 +52,15 @@ class App extends Component {
         <div className='header'>
           <div className='nav-bar-menu'>
             <NavBar user={user}/>
-            { user && user.is_admin && <AdminNavbar />}
             <ToastContainer />
           </div>
         </div>
         <div className='main'>
+            {/* { user && user.is_admin && <AdminNavbar user={user} />}
+            { user && ! user.is_admin && <MoviesDashboard user={user}/>} */}
             <Routes>
               <Route path="/seats" element={<SeatLayout/>} />
-              <Route path="/login" element={<LoginForm/>} />
+              <Route path="/login" element={<LoginForm handleUserState={(user) => this.setState(user)}/>} />
               <Route path="/logout" element={<Logout/>} />
               <Route path='/profile' element={<Profile user={user}/>} />
               <Route path="/register" element={<RegisterForm/>} />
@@ -77,8 +73,14 @@ class App extends Component {
                        } />
               <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
               <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
-              <Route path='/movies/:id/screens/:screen_id/:showtime_id' exact element={<SeatLayout/>}/>
+              <Route path='/movies/:id/screens/:screen_id/:showtime_id' exact element={<SeatLayout/>}/>  
               <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
+              <Route path='/admin'
+                       element={
+                        <RequireAuth user={this.state.user}>
+                          {<AdminNavbar user={this.state.user} />}
+                        </RequireAuth>
+                       } />  
               <Route path='/theatres/new'
                        element={
                         <RequireAuth user={this.state.user}>

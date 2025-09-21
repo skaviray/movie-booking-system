@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
 import auth from '../services/auth'
-import { useNavigate, useLocation } from 'react-router'
+import { useNavigate, useLocation, redirect } from 'react-router'
 
 
-export default function LoginForm() {
+export default function LoginForm({handleUserState}) {
     const navigate = useNavigate()
     const location = useLocation()
     const from = location.state?.from?.pathname || "/"
@@ -13,8 +13,6 @@ export default function LoginForm() {
         "email": "",
         "password": ""
     })
-    // const [accessToken, setAccessToken] = useState("")
-
     const [errors, setErrors] = useState({})
     schema = {
       email: Joi.string().email().required().label("Username"),
@@ -44,7 +42,16 @@ export default function LoginForm() {
         setErrors(validationErrors || {})
         try {
           const {data: response, headers} = await auth.loginUser(account)
-          window.location = from
+          const user = await auth.getCurrentUser()
+          handleUserState({user: user, loading: false})
+          console.log(user)
+          if (user.is_admin) {
+            console.log("admin")
+            navigate("/admin")
+          } else {
+            navigate("/movies")
+          }
+          // window.location = from
         } catch(ex) {
           if (ex.response && (ex.response.status === 400 || ex.response.status === 401)){
             setErrors({email: ex.response.data.error})
