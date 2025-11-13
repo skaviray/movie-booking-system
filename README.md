@@ -30,6 +30,7 @@ A full-stack web application for managing and booking movie tickets — includin
 | ORM        | SQLC                   |
 | Auth       | JWT / Paseto           |
 | Deployment | Docker, Docker Compose |
+| PSP        | Stripe, RazorPay       |
 
 ---
 
@@ -125,7 +126,7 @@ customerid :otuput
 amount order_id,amount, currency
 
 verify-payment -------> verify backend
-:input                   
+:input  
 order_id
 payment_id
 razorpay_payment_id
