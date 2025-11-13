@@ -32,3 +32,10 @@ export const updateShowTime = async (show) => {
   const response = await http.put(updateEndpoint, show);
   return response.data;
 }
+
+export const fetchAvailableSeatsForShowTime = async (show) => {
+    const availableSeatsEndpoint = showtimeEndpoint + '/' + show + '/available-seats'
+    console.log(availableSeatsEndpoint)
+  const response = await http.get(availableSeatsEndpoint);
+  return response.data;
+}

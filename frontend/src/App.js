@@ -1,39 +1,21 @@
-import logo from './logo.svg';
 import './App.css';
-import MoviesDashboard from './movies/moviesDashboard_fn';
-import { BrowserRouter } from 'react-router-dom';
-import Sidebar from './front-end-components/sidebar';
+import MoviesDashboard from './movies/dashoards/moviesDashboard';
 import NavBar from './movies/navBar';
 import { Routes, Route } from 'react-router-dom';
-
 import React, { Component } from 'react';
-import Customers from './movies/customers';
-import MoviesDetails from './movies/moviesDetal';
-import Rentals from './movies/rentals';
-import LoginForm from './movies/loginForm';
 import NotFound from './movies/notFound';
 import RegisterForm from './movies/registerForm';
-import MovieForm from './movies/movieForm';
 import { ToastContainer } from 'react-toastify';
-import Profile from './movies/profile';
 import Logout from './movies/logout';
 import auth from './services/auth';
 import RequireAuth from './utils/RequireAuth';
-import TheatreDashboard from './movies/theatres/theatreDashboard';
-import TheatreForm from './movies/theatres/theatreForm';
-import LocationsForm from './movies/locations/locationsForm';
-import LocationsDashboard from './movies/locations/locationsDashboard';
-import ScreensDashboard from './movies/screens/screensDashboard';
-import ScreensForm from './movies/screens/screensForm';
-import GenresDashboard from './movies/genres/genresDashboard';
-import GenresForm from './movies/genres/genresForm';
-import ShowTimesDashboard from './movies/showtimes/showTimesDashboard'
-import ShowTimeForm from './movies/showtimes/showTimeForm'
-import BookingDashboard from './movies/bookings/bookingDashboard';
-import GridView from './movies/common/grid';
-import MovieUpdateForm from './movies/movies/moviesUpdateForm';
-import SeatLayout from './movies/seats/seatlaout';
+import SeatLayout from './movies/dashoards/seatLayoutDashboard';
 import AdminNavbar from './movies/admin/navBar';
+import ShowTimesDashboardByMovieId from './movies/dashoards/movieShowTimesDashboard.jsx';
+import BookingSuccess from './movies/dashoards/bookingSuccess.jsx';
+import Success from './movies/dashoards/checkout/stripe-checkout/success.jsx';
+import Cancelled from './movies/dashoards/checkout/stripe-checkout/cancel.jsx';
+import Checkout from './movies/dashoards/checkout/checkout.jsx';
 class App extends Component {
   state = {
     user: null,
@@ -43,104 +25,36 @@ class App extends Component {
     const user = await auth.getCurrentUser()
     this.setState({user: user, loading: false})
    }
+
   render() { 
     const {user} = this.state
     console.log(user)
-    if (this.loading) return null
+    if (this.state.loading) return null
     return (
        <div className='super-container'>
-        <div className='header'>
-          <div className='nav-bar-menu'>
-            <NavBar user={user}/>
-            <ToastContainer />
-          </div>
+        <div className='nav-bar-menu'>
+          <NavBar handleUserState={(user) => this.setState(user)} user={user}/>
+          <ToastContainer />
         </div>
         <div className='main'>
-            {/* { user && user.is_admin && <AdminNavbar user={user} />}
-            { user && ! user.is_admin && <MoviesDashboard user={user}/>} */}
             <Routes>
-              <Route path="/seats" element={<SeatLayout/>} />
-              <Route path="/login" element={<LoginForm handleUserState={(user) => this.setState(user)}/>} />
               <Route path="/logout" element={<Logout/>} />
-              <Route path='/profile' element={<Profile user={user}/>} />
               <Route path="/register" element={<RegisterForm/>} />
               <Route path='/movies' element={<MoviesDashboard key={user?.username || "guest"} user={user}/>} />
-              <Route path='/movies/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<MovieForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-              <Route path='/movies/:id' exact element={<MovieUpdateForm />}/>
-              <Route path='/movies/:id/bookings' exact element={<BookingDashboard/>}/>
-              <Route path='/movies/:id/screens/:screen_id/:showtime_id' exact element={<SeatLayout/>}/>  
-              <Route path='/theatres' element={<TheatreDashboard key={user?.username || "guest"} user={user}/>} />
+              <Route path='/movies/:id/showtimes' exact element={<ShowTimesDashboardByMovieId/>}/>
+              <Route path='/movies/:id/screens/:screen_id/seat-layout/:showtime_id' exact element={<SeatLayout/>}/>  
               <Route path='/admin'
                        element={
-                        <RequireAuth user={this.state.user}>
-                          {<AdminNavbar user={this.state.user} />}
+                        <RequireAuth user={user}>
+                          {<AdminNavbar user={user} />}
                         </RequireAuth>
-                       } />  
-              <Route path='/theatres/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<TheatreForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-              <Route path='/locations/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<LocationsForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-         
-               <Route path='/locations'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<LocationsDashboard user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/screens'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<ScreensDashboard user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/screens/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<ScreensForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/genres'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<GenresDashboard user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/genres/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<GenresForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/showtimes'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<ShowTimesDashboard user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-               <Route path='/showtimes/new'
-                       element={
-                        <RequireAuth user={this.state.user}>
-                          {<ShowTimeForm user={this.state.user} />}
-                        </RequireAuth>
-                       } />
-              <Route path='/customers' element={<Customers/>}/>
-              <Route path='/rentals' element={<Rentals/>}/>
+                       } /> 
+              <Route path='/booking-success' element={<BookingSuccess />} />
+              <Route path='/success' element={<Success />} />
+              <Route path='/cancel' element={<Cancelled />} />
               <Route path='/' exact element={<MoviesDashboard/>}/>
-              {/* <Route path="/not-found" element={<NotFound/>} /> */}
               <Route path='*' element={<NotFound/>}/>
+              <Route path='/checkout' element={<Checkout />} />
             </Routes>
         </div>
         <div className='footer'>

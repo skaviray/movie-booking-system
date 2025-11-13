@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	db "vividly-backend/db/sqlc"
+	paymentprovider "vividly-backend/payment-provider"
 	"vividly-backend/token"
 	"vividly-backend/utils"
 
@@ -12,29 +13,39 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/razorpay/razorpay-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Server struct {
-	config         utils.Config
-	store          db.Store
-	tokenMaker     token.Maker
-	razorPayClient *razorpay.Client
-	router         *gin.Engine
+	config          utils.Config
+	store           db.Store
+	tokenMaker      token.Maker
+	razorPayClient  *razorpay.Client
+	paymentProvider paymentprovider.PaymentProvider
+	router          *gin.Engine
 }
 
 func New(store db.Store, config utils.Config) (*Server, error) {
 	maker, err := token.NewPasetoMaker(config.SecretKey)
+	var paymentProvider paymentprovider.PaymentProvider
+	if config.PSP == "razorpay" {
+		paymentProvider = paymentprovider.NewRazorPayProvider(config.RazorpayKey, config.RazorpaySecret)
+	} else {
+		paymentProvider = paymentprovider.NewStripeProvider(config.Stripe_Secret_Key, config.Stripe_Webhook_Secret)
+	}
+
 	razorPayClient := razorpay.NewClient(config.RazorpayKey, config.RazorpaySecret)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create token maker: %c", err)
 	}
 	server := &Server{
-		config:         config,
-		store:          store,
-		tokenMaker:     maker,
-		razorPayClient: razorPayClient,
+		config:          config,
+		store:           store,
+		tokenMaker:      maker,
+		paymentProvider: paymentProvider,
+		razorPayClient:  razorPayClient,
 	}
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
@@ -62,19 +73,16 @@ func (server *Server) setupRouter() {
 		// Movies Public Routes
 		authRoutes.GET("/movies", server.ListMovies)
 		authRoutes.GET("/movies/:id", server.GetMovie)
-		authRoutes.GET("/movies/:id/showtimes", server.GetShowtimesByMovie)
+		authRoutes.GET("/movies/:id/showtimes", server.GetShowtimesByMovieId)
 
 		// Movies Locations Routes
 		authRoutes.GET("/locations", server.ListLocations)
 		authRoutes.GET("/locations/:id", server.GetLocation)
-
-		// Genres Public Routes
-		authRoutes.GET("/genres", server.ListGenres)
-		authRoutes.GET("/genres/:id", server.GetGenre)
+		authRoutes.GET("/locations/:id/theaters", server.GetTheaterByLocationId)
 
 		// Theatre public routes
 		// authRoutes.GET("/theaters/:id/seats", server.ListSeatsByTheater)
-		authRoutes.GET("/theaters/:id", server.GetTheater)
+		authRoutes.GET("/theatres/:id", server.GetTheater)
 		authRoutes.GET("/theatres", server.ListTheaters)
 
 		// Screens public routes
@@ -84,14 +92,21 @@ func (server *Server) setupRouter() {
 		// showtime public routes
 		authRoutes.GET("/showtimes", server.ListShowTimes)
 		authRoutes.GET("/showtimes/:id", server.GetShowTime)
+		authRoutes.GET("/showtimes/:id/available-seats", server.GetAvailableSeatsByShowTimeId)
 
 		// Seats Public Routes
 		authRoutes.POST("/seats", server.CreateSeat)
 		authRoutes.PUT("/seats", server.CreateSeat)
-
+		// authRoutes.POST("/book-seats", server.BookSeats)
 		// Payment routes
-		authRoutes.POST("/create-order", server.CreateOrder)
-		authRoutes.POST("/verify-payment", server.VerifySignature)
+		// authRoutes.POST("/create-order", server.CreateOrder)
+		// authRoutes.POST("/verify-payment", server.VerifySignature)
+		authRoutes.POST("/payment", server.CreatePayment)
+		authRoutes.POST("/webhook", server.HandleWebhook)
+		// Customer Routes
+		authRoutes.POST("/customers", server.CreateCustomer)
+		authRoutes.GET("/customers", server.ListCustomers)
+		authRoutes.GET("/customers/:id", server.GetCustomer)
 	}
 
 	protected := router.Group("/api").Use(server.authMiddleware(), server.isAdmin())
@@ -103,9 +118,6 @@ func (server *Server) setupRouter() {
 	protected.DELETE("/users/:id", server.DeleteUser)
 
 	// customers Routes
-	protected.POST("/customers", server.CreateCustomer)
-	protected.GET("/customers", server.ListCustomers)
-	protected.GET("/customers/:id", server.GetCustomer)
 	protected.PATCH("/customers", server.UpdateCustomer)
 	protected.DELETE("/customers/:id", server.DeleteCustomer)
 
@@ -119,14 +131,9 @@ func (server *Server) setupRouter() {
 	protected.PUT("/movies/:id", server.UpdateMovie)
 	protected.DELETE("/movies/:id", server.DeleteMovie)
 
-	// Genres Routes
-	protected.POST("/genres", server.CreateGenre)
-	protected.PATCH("/genres", server.UpdateGenre)
-	protected.DELETE("/genres/:id", server.DeleteGenre)
-
 	//Theater Routes
 	protected.POST("/theatres", server.CreateTheater)
-	protected.PUT("/theatres", server.UpdateTheater)
+	protected.PUT("/theatres/:id", server.UpdateTheater)
 	protected.DELETE("/theatres/:id", server.DeleteTheater)
 
 	//Seats Routes
@@ -135,7 +142,7 @@ func (server *Server) setupRouter() {
 	//Screen Routes
 	protected.POST("/screens", server.CreateScreen)
 	protected.PUT("/screens/:id", server.UpdateScreen)
-
+	protected.DELETE("/screens/:id", server.DeleteScreen)
 	// Showtimes Protected Routes
 	authRoutes.POST("/showtimes", server.CreateShowTime)
 	authRoutes.PUT("/showtimes/:id", server.UpdateShowTime)
@@ -163,12 +170,15 @@ func (server *Server) CreateDefaultAdminUser() error {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 	arg := db.CreateUserParams{
-		Username:          "admin",
-		HashedPassword:    string(hashedPassword),
-		Email:             email,
-		FullName:          "System Admin",
-		PasswordChangedAt: time.Now(),
-		IsAdmin:           true,
+		Username:       "admin",
+		HashedPassword: string(hashedPassword),
+		Email:          email,
+		FullName:       "System Admin",
+		PasswordChangedAt: pgtype.Timestamptz{
+			Time:  time.Now(),
+			Valid: true,
+		},
+		IsAdmin: true,
 	}
 
 	_, err = server.store.CreateUser(ctx, arg)

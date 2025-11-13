@@ -10,6 +10,7 @@ import (
 	"vividly-backend/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -42,8 +43,8 @@ func newUserResponse(user db.User) userResponse {
 		Username:          user.Username,
 		Email:             user.Email,
 		FullName:          user.FullName,
-		PasswordChangedAt: user.PasswordChangedAt,
-		CreatedAt:         user.CreatedAt,
+		PasswordChangedAt: user.PasswordChangedAt.Time,
+		CreatedAt:         user.CreatedAt.Time,
 		IsAdmin:           user.IsAdmin,
 	}
 }
@@ -67,12 +68,15 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 		return
 	}
 	arg := db.CreateUserParams{
-		Username:          req.Username,
-		HashedPassword:    string(hashedPassword),
-		Email:             req.Email,
-		FullName:          req.FullName,
-		PasswordChangedAt: time.Now(),
-		IsAdmin:           req.IsAdmin,
+		Username:       req.Username,
+		HashedPassword: string(hashedPassword),
+		Email:          req.Email,
+		FullName:       req.FullName,
+		PasswordChangedAt: pgtype.Timestamptz{
+			Time:  time.Now(),
+			Valid: true,
+		},
+		IsAdmin: req.IsAdmin,
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)

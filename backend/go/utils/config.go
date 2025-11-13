@@ -10,14 +10,17 @@ import (
 )
 
 type Config struct {
-	DBDriver       string        `mapstructure:"DB_DRIVER"`
-	DBSource       string        `mapstructure:"DB_SOURCE"`
-	ListenAddress  string        `mapstructure:"LISTEN_ADDRESS"`
-	SecretKey      string        `mapstructure:"SECRET_KEY"`
-	Duration       time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RequireAuth    bool          `mapstructure:"REQUIRE_AUTH"`
-	RazorpayKey    string        `mapstructure:"RAZORPAY_KEY"`
-	RazorpaySecret string        `mapstructure:"RAZORPAY_SECRET"`
+	DBDriver              string        `mapstructure:"DB_DRIVER"`
+	DBSource              string        `mapstructure:"DB_SOURCE"`
+	ListenAddress         string        `mapstructure:"LISTEN_ADDRESS"`
+	SecretKey             string        `mapstructure:"SECRET_KEY"`
+	Duration              time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RequireAuth           bool          `mapstructure:"REQUIRE_AUTH"`
+	RazorpayKey           string        `mapstructure:"RAZORPAY_KEY"`
+	RazorpaySecret        string        `mapstructure:"RAZORPAY_SECRET"`
+	Stripe_Secret_Key     string        `mapstructure:"STRIPE_SECRET_KEY"`
+	Stripe_Webhook_Secret string        `mapstructure:"STRIPE_WEBHOOK_SECRET"`
+	PSP                   string        `mapstructure:"PSP"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -27,8 +30,7 @@ func LoadConfig(path string) (config Config, err error) {
 
 	// viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv() // override with env vars if set
-	// viper.SetEnvPrefix("")    // optional: set a prefix if needed (e.g. "MYAPP")
+	viper.AutomaticEnv()      // override with env vars if set
 	viper.AllowEmptyEnv(true) // allow empty vars
 	for _, env := range os.Environ() {
 		fmt.Println(env)
@@ -47,8 +49,10 @@ func LoadConfig(path string) (config Config, err error) {
 		fmt.Println("No app.env found, continuing with environment variables...")
 	}
 	keys := []string{
-		"DB_DRIVER", "DB_SOURCE", "LISTEN_ADDRESS",
-		"SECRET_KEY", "ACCESS_TOKEN_DURATION", "REQUIRE_AUTH", "RAZORPAY_KEY", "RAZORPAY_SECRET",
+		"DB_DRIVER", "DB_SOURCE", "LISTEN_ADDRESS", "SECRET_KEY",
+		"ACCESS_TOKEN_DURATION", "REQUIRE_AUTH", "RAZORPAY_KEY",
+		"RAZORPAY_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET",
+		"PSP",
 	}
 	for _, key := range keys {
 		if err := viper.BindEnv(key); err != nil {

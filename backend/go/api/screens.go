@@ -1,7 +1,10 @@
 package api
 
 import (
+	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 	db "vividly-backend/db/sqlc"
@@ -13,7 +16,7 @@ type CreateScreenRequest struct {
 	TheatreId int64  `json:"theater_id" binding:"required"`
 	Name      string `json:"name" binding:"required"`
 	Rows      int32  `json:"rows" binding:"required"`
-	Cols      int32  `json:"cols" binding:"required"`
+	Columns   int32  `json:"columns" binding:"required"`
 }
 
 type UpdateScreenRequest struct {
@@ -23,12 +26,17 @@ type UpdateScreenRequest struct {
 
 type ScreenResponse struct {
 	ID        int64     `json:"id"`
-	TheatreId int32     `json:"theater_id"`
+	TheatreId int64     `json:"theater_id"`
 	Name      string    `json:"name"`
 	Rows      int32     `json:"rows"`
-	Cols      int32     `json:"cols"`
+	Columns   int32     `json:"columns"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+type CreateSeatsParams struct {
+	ScreenID int64
+	Rows     int
+	Columns  int
 }
 
 func newScreenResponse(s db.Screen) ScreenResponse {
@@ -37,9 +45,9 @@ func newScreenResponse(s db.Screen) ScreenResponse {
 		TheatreId: s.TheaterID,
 		Name:      s.Name,
 		Rows:      s.Rows,
-		Cols:      s.Cols,
-		CreatedAt: s.CreatedAt,
-		UpdatedAt: s.UpdatedAt,
+		Columns:   s.Columns,
+		CreatedAt: s.CreatedAt.Time,
+		UpdatedAt: s.UpdatedAt.Time,
 	}
 }
 func (server *Server) CreateScreen(ctx *gin.Context) {
@@ -49,17 +57,24 @@ func (server *Server) CreateScreen(ctx *gin.Context) {
 		return
 	}
 	args := db.CreateScreenParams{
-		TheaterID: int32(req.TheatreId),
+		TheaterID: req.TheatreId,
 		Name:      req.Name,
 		Rows:      req.Rows,
-		Cols:      req.Cols,
+		Columns:   req.Columns,
 	}
 	screen, err := server.store.CreateScreen(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	if err := server.store.CreateSeatsBulk(context.Background(), db.CreateSeatsParams{
+		ScreenID: screen.ID,
+		Rows:     screen.Rows,
+		Columns:  screen.Columns,
+	}); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	ctx.JSON(http.StatusOK, newScreenResponse(screen))
 }
 
@@ -137,7 +152,17 @@ func (server *Server) DeleteScreen(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	_, err := server.store.GetScreen(ctx, uri.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			message := fmt.Sprintf("unable to find the screen %d", uri.ID)
+			ctx.JSON(http.StatusNotFound, gin.H{"error": message})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
 	if err := server.store.DeleteScreen(ctx, uri.ID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

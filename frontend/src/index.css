@@ -29,3 +29,25 @@ code {
 .clickable {
   cursor: pointer;
 }
+
+.success-page {
+  margin: 200px;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  .success-button-container {
+    align-items: center;
+    .success-button {
+      width: 10rem;
+      height: auto;
+    }
+  }
+}
+.is-black {
+  background-color: black;
+}
+
+
+.text {
+  color: white;
+}

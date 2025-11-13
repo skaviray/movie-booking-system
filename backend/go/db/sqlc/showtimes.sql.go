@@ -7,35 +7,39 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createShowtime = `-- name: CreateShowtime :one
-INSERT INTO showtimes (movie_id, screen_id, start_time, price)
-VALUES ($1, $2, $3, $4)
-RETURNING id, movie_id, screen_id, start_time, price, created_at, updated_at
+INSERT INTO showtimes (screen_id, movie_id, start_time, end_time, price)
+VALUES ($1, $2, $3,$4,$5)
+RETURNING id, screen_id, movie_id, start_time, end_time, price, created_at, updated_at
 `
 
 type CreateShowtimeParams struct {
-	MovieID   int32     `json:"movie_id"`
-	ScreenID  int32     `json:"screen_id"`
-	StartTime time.Time `json:"start_time"`
-	Price     float64   `json:"price"`
+	ScreenID  int64            `json:"screen_id"`
+	MovieID   int64            `json:"movie_id"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Price     float64          `json:"price"`
 }
 
 func (q *Queries) CreateShowtime(ctx context.Context, arg CreateShowtimeParams) (Showtime, error) {
-	row := q.db.QueryRowContext(ctx, createShowtime,
-		arg.MovieID,
+	row := q.db.QueryRow(ctx, createShowtime,
 		arg.ScreenID,
+		arg.MovieID,
 		arg.StartTime,
+		arg.EndTime,
 		arg.Price,
 	)
 	var i Showtime
 	err := row.Scan(
 		&i.ID,
-		&i.MovieID,
 		&i.ScreenID,
+		&i.MovieID,
 		&i.StartTime,
+		&i.EndTime,
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -48,22 +52,23 @@ DELETE FROM showtimes WHERE id = $1
 `
 
 func (q *Queries) DeleteShowtime(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteShowtime, id)
+	_, err := q.db.Exec(ctx, deleteShowtime, id)
 	return err
 }
 
 const getShowtime = `-- name: GetShowtime :one
-SELECT id, movie_id, screen_id, start_time, price, created_at, updated_at FROM showtimes WHERE id = $1
+SELECT id, screen_id, movie_id, start_time, end_time, price, created_at, updated_at FROM showtimes WHERE id = $1
 `
 
 func (q *Queries) GetShowtime(ctx context.Context, id int64) (Showtime, error) {
-	row := q.db.QueryRowContext(ctx, getShowtime, id)
+	row := q.db.QueryRow(ctx, getShowtime, id)
 	var i Showtime
 	err := row.Scan(
 		&i.ID,
-		&i.MovieID,
 		&i.ScreenID,
+		&i.MovieID,
 		&i.StartTime,
+		&i.EndTime,
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -71,12 +76,76 @@ func (q *Queries) GetShowtime(ctx context.Context, id int64) (Showtime, error) {
 	return i, err
 }
 
+const getShowtimesByMovieID = `-- name: GetShowtimesByMovieID :many
+SELECT
+    st.id AS showtime_id,
+    st.start_time,
+    st.end_time,
+    st.price,
+    t.id AS theater_id,
+    t.theatre_name,
+    s.id AS screen_id,
+    s.name AS screen_name,
+    l.city,
+    l.location_name
+FROM showtimes st
+JOIN screens s ON st.screen_id = s.id
+JOIN theaters t ON s.theater_id = t.id
+JOIN locations l ON t.location = l.id
+WHERE st.movie_id = $1
+ORDER BY st.start_time
+`
+
+type GetShowtimesByMovieIDRow struct {
+	ShowtimeID   int64            `json:"showtime_id"`
+	StartTime    pgtype.Timestamp `json:"start_time"`
+	EndTime      pgtype.Timestamp `json:"end_time"`
+	Price        float64          `json:"price"`
+	TheaterID    int64            `json:"theater_id"`
+	TheatreName  string           `json:"theatre_name"`
+	ScreenID     int64            `json:"screen_id"`
+	ScreenName   string           `json:"screen_name"`
+	City         string           `json:"city"`
+	LocationName string           `json:"location_name"`
+}
+
+func (q *Queries) GetShowtimesByMovieID(ctx context.Context, movieID int64) ([]GetShowtimesByMovieIDRow, error) {
+	rows, err := q.db.Query(ctx, getShowtimesByMovieID, movieID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetShowtimesByMovieIDRow{}
+	for rows.Next() {
+		var i GetShowtimesByMovieIDRow
+		if err := rows.Scan(
+			&i.ShowtimeID,
+			&i.StartTime,
+			&i.EndTime,
+			&i.Price,
+			&i.TheaterID,
+			&i.TheatreName,
+			&i.ScreenID,
+			&i.ScreenName,
+			&i.City,
+			&i.LocationName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listShowtimes = `-- name: ListShowtimes :many
-SELECT id, movie_id, screen_id, start_time, price, created_at, updated_at FROM showtimes ORDER BY start_time
+SELECT id, screen_id, movie_id, start_time, end_time, price, created_at, updated_at FROM showtimes ORDER BY start_time
 `
 
 func (q *Queries) ListShowtimes(ctx context.Context) ([]Showtime, error) {
-	rows, err := q.db.QueryContext(ctx, listShowtimes)
+	rows, err := q.db.Query(ctx, listShowtimes)
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +155,10 @@ func (q *Queries) ListShowtimes(ctx context.Context) ([]Showtime, error) {
 		var i Showtime
 		if err := rows.Scan(
 			&i.ID,
-			&i.MovieID,
 			&i.ScreenID,
+			&i.MovieID,
 			&i.StartTime,
+			&i.EndTime,
 			&i.Price,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -97,8 +167,38 @@ func (q *Queries) ListShowtimes(ctx context.Context) ([]Showtime, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
+	}
+	return items, nil
+}
+
+const listShowtimesByMovieId = `-- name: ListShowtimesByMovieId :many
+SELECT id, screen_id, movie_id, start_time, end_time, price, created_at, updated_at FROM showtimes WHERE movie_id = $1 ORDER BY start_time
+`
+
+func (q *Queries) ListShowtimesByMovieId(ctx context.Context, movieID int64) ([]Showtime, error) {
+	rows, err := q.db.Query(ctx, listShowtimesByMovieId, movieID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Showtime{}
+	for rows.Next() {
+		var i Showtime
+		if err := rows.Scan(
+			&i.ID,
+			&i.ScreenID,
+			&i.MovieID,
+			&i.StartTime,
+			&i.EndTime,
+			&i.Price,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -108,25 +208,32 @@ func (q *Queries) ListShowtimes(ctx context.Context) ([]Showtime, error) {
 
 const updateShowtime = `-- name: UpdateShowtime :one
 UPDATE showtimes
-SET start_time = $2, price = $3, updated_at = now()
+SET start_time = $2, end_time = $3, price=$4, updated_at = now()
 WHERE id = $1
-RETURNING id, movie_id, screen_id, start_time, price, created_at, updated_at
+RETURNING id, screen_id, movie_id, start_time, end_time, price, created_at, updated_at
 `
 
 type UpdateShowtimeParams struct {
-	ID        int64     `json:"id"`
-	StartTime time.Time `json:"start_time"`
-	Price     float64   `json:"price"`
+	ID        int64            `json:"id"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Price     float64          `json:"price"`
 }
 
 func (q *Queries) UpdateShowtime(ctx context.Context, arg UpdateShowtimeParams) (Showtime, error) {
-	row := q.db.QueryRowContext(ctx, updateShowtime, arg.ID, arg.StartTime, arg.Price)
+	row := q.db.QueryRow(ctx, updateShowtime,
+		arg.ID,
+		arg.StartTime,
+		arg.EndTime,
+		arg.Price,
+	)
 	var i Showtime
 	err := row.Scan(
 		&i.ID,
-		&i.MovieID,
 		&i.ScreenID,
+		&i.MovieID,
 		&i.StartTime,
+		&i.EndTime,
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,

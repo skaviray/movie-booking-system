@@ -5,7 +5,7 @@ import auth from '../services/auth'
 export default function Logout() {
     useEffect(() => {
         auth.logout()
-        window.location = "/login"
+        window.location = "/movies"
     }, [])
   return null
 }

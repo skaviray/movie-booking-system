@@ -6,8 +6,7 @@ export default function RequireAuth({ user, children }) {
 
   if (!user) {
     // Redirect to login and preserve intended location
-    console.log(location)
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/movies" state={{ from: location }} replace />
   }
 
   return children

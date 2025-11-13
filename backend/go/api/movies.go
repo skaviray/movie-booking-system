@@ -2,65 +2,65 @@ package api
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 	db "vividly-backend/db/sqlc"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type createMovieRequest struct {
-	Title           string    `json:"title" binding:"required"`
-	Description     string    `json:"description"`
-	Poster          string    `json:"poster" binding:"required,url"`
-	Trailer         string    `json:"trailer" binding:"required,url"`
-	DurationMinutes int32     `json:"duration_minutes" binding:"required"`
-	Language        string    `json:"language" binding:"required"`
-	GenreId         int32     `json:"genre_id" binding:"required"`
-	ReleaseDate     time.Time `json:"release_date" binding:"required"`
+	Title       string    `json:"title" binding:"required"`
+	Description string    `json:"description"`
+	Poster      string    `json:"poster" binding:"required,url"`
+	Trailer     string    `json:"trailer" binding:"required,url"`
+	Runtime     int64     `json:"runtime" binding:"required"`
+	Language    string    `json:"language" binding:"required"`
+	ReleaseDate time.Time `json:"release_date" binding:"required"`
 }
 
 type updateMovieRequest struct {
-	Title           string    `json:"title"`
-	Poster          string    `json:"poster" binding:"required,url"`
-	Trailer         string    `json:"trailer" binding:"required,url"`
-	Description     string    `json:"description"`
-	DurationMinutes int32     `json:"duration_minutes"`
-	Language        string    `json:"language"`
-	GenreId         int32     `json:"genre_id"`
-	ReleaseDate     time.Time `json:"release_date"`
+	Title       string    `json:"title"`
+	Poster      string    `json:"poster" binding:"required,url"`
+	Trailer     string    `json:"trailer" binding:"required,url"`
+	Description string    `json:"description"`
+	Runtime     int64     `json:"runtime"`
+	Language    string    `json:"language"`
+	GenreId     int64     `json:"genre_id"`
+	ReleaseDate time.Time `json:"release_date"`
 }
 
 type movieResponse struct {
-	ID              int64     `json:"id"`
-	Title           string    `json:"title"`
-	Poster          string    `json:"poster"`
-	Trailer         string    `json:"trailer"`
-	Likes           int32     `json:"likes"`
-	GenreID         int32     `json:"genre_id"`
-	Description     string    `json:"description"`
-	DurationMinutes int32     `json:"duration_minutes"`
-	Language        string    `json:"language"`
-	ReleaseData     time.Time `json:"release_data"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Poster      string    `json:"poster"`
+	Trailer     string    `json:"trailer"`
+	Likes       int32     `json:"likes"`
+	GenreID     int64     `json:"genre_id"`
+	Description string    `json:"description"`
+	Runtime     int64     `json:"runtime"`
+	Language    string    `json:"language"`
+	ReleaseData time.Time `json:"release_data"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func newMovieResponse(m db.Movie) movieResponse {
 	return movieResponse{
-		ID:              m.ID,
-		Title:           m.Title,
-		Poster:          m.Poster,
-		Likes:           m.Likes,
-		Trailer:         m.Trailer,
-		GenreID:         m.GenreID,
-		Description:     m.Description,
-		DurationMinutes: m.DurationMinutes,
-		Language:        m.Language,
-		CreatedAt:       m.CreatedAt,
-		UpdatedAt:       m.UpdatedAt,
-		ReleaseData:     m.ReleaseDate,
+		ID:          m.ID,
+		Title:       m.Title,
+		Poster:      m.Poster,
+		Likes:       m.Likes,
+		Trailer:     m.Trailer,
+		Description: m.Description,
+		Runtime:     m.Runtime,
+		Language:    m.Language,
+		CreatedAt:   m.CreatedAt.Time,
+		UpdatedAt:   m.UpdatedAt.Time,
+		ReleaseData: m.ReleaseDate.Time,
 	}
 }
 
@@ -72,14 +72,16 @@ func (server *Server) CreateMovie(ctx *gin.Context) {
 	}
 
 	movie, err := server.store.CreateMovie(ctx, db.CreateMovieParams{
-		Title:           req.Title,
-		GenreID:         req.GenreId,
-		Poster:          req.Poster,
-		Trailer:         req.Trailer,
-		Description:     req.Description,
-		DurationMinutes: req.DurationMinutes,
-		Language:        req.Language,
-		ReleaseDate:     req.ReleaseDate,
+		Title:       req.Title,
+		Poster:      req.Poster,
+		Trailer:     req.Trailer,
+		Description: req.Description,
+		Runtime:     req.Runtime,
+		Language:    req.Language,
+		ReleaseDate: pgtype.Date{
+			Time:  req.ReleaseDate,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -143,15 +145,17 @@ func (server *Server) UpdateMovie(ctx *gin.Context) {
 	}
 
 	movie, err := server.store.UpdateMovie(ctx, db.UpdateMovieParams{
-		ID:              uri.ID,
-		Title:           req.Title,
-		Poster:          req.Poster,
-		Trailer:         req.Trailer,
-		GenreID:         req.GenreId,
-		Language:        req.Language,
-		Description:     req.Description,
-		DurationMinutes: req.DurationMinutes,
-		ReleaseDate:     req.ReleaseDate,
+		ID:          uri.ID,
+		Title:       req.Title,
+		Poster:      req.Poster,
+		Trailer:     req.Trailer,
+		Language:    req.Language,
+		Description: req.Description,
+		Runtime:     req.Runtime,
+		ReleaseDate: pgtype.Date{
+			Time:  req.ReleaseDate,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -170,7 +174,17 @@ func (server *Server) DeleteMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	_, err := server.store.GetMovie(ctx, uri.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			message := fmt.Sprintf("unable to find the movie with id %d ", uri.ID)
+			ctx.JSON(http.StatusNotFound, gin.H{"error": message})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
 	if err := server.store.DeleteMovie(ctx, uri.ID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -197,19 +211,19 @@ type GetTheatersAndShowtimesByMovieRow struct {
 // 	StartTime  time.Time `json:"start_time"`
 // }
 
-func (s *Server) GetShowtimesByMovie(ctx *gin.Context) {
-	movieIDParam := ctx.Param("id")
-	movieID, err := strconv.Atoi(movieIDParam)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid movie_id"})
-		return
-	}
+// func (s *Server) GetShowtimesByMovie(ctx *gin.Context) {
+// 	movieIDParam := ctx.Param("id")
+// 	movieID, err := strconv.Atoi(movieIDParam)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid movie_id"})
+// 		return
+// 	}
 
-	showtimes, err := s.store.GetTheatersAndShowtimesByMovie(ctx, int32(movieID))
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch showtimes"})
-		return
-	}
+// 	showtimes, err := s.store.GetTheatersAndShowtimesByMovie(ctx, int32(movieID))
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch showtimes"})
+// 		return
+// 	}
 
-	ctx.JSON(http.StatusOK, showtimes)
-}
+// 	ctx.JSON(http.StatusOK, showtimes)
+// }

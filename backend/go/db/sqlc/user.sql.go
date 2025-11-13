@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -25,16 +26,16 @@ RETURNING id, username, hashed_password, email, full_name, password_changed_at, 
 `
 
 type CreateUserParams struct {
-	Username          string    `json:"username"`
-	HashedPassword    string    `json:"hashed_password"`
-	Email             string    `json:"email"`
-	FullName          string    `json:"full_name"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	IsAdmin           bool      `json:"is_admin"`
+	Username          string             `json:"username"`
+	HashedPassword    string             `json:"hashed_password"`
+	Email             string             `json:"email"`
+	FullName          string             `json:"full_name"`
+	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
+	IsAdmin           bool               `json:"is_admin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.HashedPassword,
 		arg.Email,
@@ -63,7 +64,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
 
@@ -74,7 +75,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -97,7 +98,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -119,7 +120,7 @@ ORDER BY id
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsers)
+	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -142,9 +143,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -165,7 +163,7 @@ type UpdateUserPasswordParams struct {
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
+	row := q.db.QueryRow(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
 	var i User
 	err := row.Scan(
 		&i.ID,

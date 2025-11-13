@@ -10,22 +10,22 @@ import (
 )
 
 const createTheater = `-- name: CreateTheater :one
-INSERT INTO theaters (name, location)
+INSERT INTO theaters (theatre_name, location)
 VALUES ($1, $2)
-RETURNING id, name, location, created_at, updated_at
+RETURNING id, theatre_name, location, created_at, updated_at
 `
 
 type CreateTheaterParams struct {
-	Name     string `json:"name"`
-	Location int32  `json:"location"`
+	TheatreName string `json:"theatre_name"`
+	Location    int32  `json:"location"`
 }
 
 func (q *Queries) CreateTheater(ctx context.Context, arg CreateTheaterParams) (Theater, error) {
-	row := q.db.QueryRowContext(ctx, createTheater, arg.Name, arg.Location)
+	row := q.db.QueryRow(ctx, createTheater, arg.TheatreName, arg.Location)
 	var i Theater
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
+		&i.TheatreName,
 		&i.Location,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -38,20 +38,20 @@ DELETE FROM theaters WHERE id = $1
 `
 
 func (q *Queries) DeleteTheater(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteTheater, id)
+	_, err := q.db.Exec(ctx, deleteTheater, id)
 	return err
 }
 
 const getTheater = `-- name: GetTheater :one
-SELECT id, name, location, created_at, updated_at FROM theaters WHERE id = $1
+SELECT id, theatre_name, location, created_at, updated_at FROM theaters WHERE id = $1
 `
 
 func (q *Queries) GetTheater(ctx context.Context, id int64) (Theater, error) {
-	row := q.db.QueryRowContext(ctx, getTheater, id)
+	row := q.db.QueryRow(ctx, getTheater, id)
 	var i Theater
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
+		&i.TheatreName,
 		&i.Location,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -60,11 +60,11 @@ func (q *Queries) GetTheater(ctx context.Context, id int64) (Theater, error) {
 }
 
 const listTheaters = `-- name: ListTheaters :many
-SELECT id, name, location, created_at, updated_at FROM theaters ORDER BY id
+SELECT id, theatre_name, location, created_at, updated_at FROM theaters ORDER BY id
 `
 
 func (q *Queries) ListTheaters(ctx context.Context) ([]Theater, error) {
-	rows, err := q.db.QueryContext(ctx, listTheaters)
+	rows, err := q.db.Query(ctx, listTheaters)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (q *Queries) ListTheaters(ctx context.Context) ([]Theater, error) {
 		var i Theater
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
+			&i.TheatreName,
 			&i.Location,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -82,9 +82,6 @@ func (q *Queries) ListTheaters(ctx context.Context) ([]Theater, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -94,23 +91,23 @@ func (q *Queries) ListTheaters(ctx context.Context) ([]Theater, error) {
 
 const updateTheater = `-- name: UpdateTheater :one
 UPDATE theaters
-SET name = $2, location = $3, updated_at = now()
+SET theatre_name = $2, location = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, name, location, created_at, updated_at
+RETURNING id, theatre_name, location, created_at, updated_at
 `
 
 type UpdateTheaterParams struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	Location int32  `json:"location"`
+	ID          int64  `json:"id"`
+	TheatreName string `json:"theatre_name"`
+	Location    int32  `json:"location"`
 }
 
 func (q *Queries) UpdateTheater(ctx context.Context, arg UpdateTheaterParams) (Theater, error) {
-	row := q.db.QueryRowContext(ctx, updateTheater, arg.ID, arg.Name, arg.Location)
+	row := q.db.QueryRow(ctx, updateTheater, arg.ID, arg.TheatreName, arg.Location)
 	var i Theater
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
+		&i.TheatreName,
 		&i.Location,
 		&i.CreatedAt,
 		&i.UpdatedAt,

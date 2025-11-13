@@ -1,16 +1,14 @@
 import React, { useState } from 'react'
-import { NavLink } from 'react-router'
-import LocationsDashboard from '../locations/locationsDashboard'
-import ScreensDashboard from '../screens/screensDashboard'
-import ShowTimesDashboard from '../showtimes/showTimesDashboard'
-import GenresDashboard from '../genres/genresDashboard'
-import TheatreDashboard from '../theatres/theatreDashboard'
-import MoviesDashboard from '../moviesDashboard_fn'
+import LocationsDashboard from '../dashoards/locationsDashboard'
+import ScreensDashboard from '../dashoards/screensDashboard'
+import ShowTimesDashboard from '../dashoards/showTimesDashboard'
+import TheatreDashboard from '../dashoards/theatreDashboard'
+import MoviesDashboard from '../dashoards/moviesDashboard'
 
 export default function AdminNavbar({user}) {
-    const [activeTab,setTab] = useState("movies")
+    const [activeTab,setActiveTab] = useState("movies")
     const handleSelect = (tab) => {
-        setTab(tab)
+        setActiveTab(tab)
     }
     const renderContent = () => {
         switch (activeTab){
@@ -18,9 +16,8 @@ export default function AdminNavbar({user}) {
             case "screens": return <ScreensDashboard user={user} />;
             case "showtimes": return <ShowTimesDashboard user={user} />;
             case "theatres": return <TheatreDashboard user={user} />;
-            case "genres": return <GenresDashboard user={user} />;
             case "users": return <p1>users</p1>;
-            case "profile": return <p1>profile</p1>;
+            // case "profile": return <ProfilePage />;
             default: return <MoviesDashboard user={user} />;
         }
         
@@ -32,29 +29,26 @@ export default function AdminNavbar({user}) {
         style={{ width: "220px", minHeight: "100vh" }}
     >
         <ul class="nav flex-column">
+        {/* <li class="nav-item">
+            <button className={`nav-link ${activeTab === "profile" ? "active" : ""}`}onClick={() => {handleSelect("profile")}}>Profile</button>
+        </li> */}
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("profile")}}>Profile</button>
+            <button className={`nav-link ${activeTab === "movies" ? "active" : ""}`}onClick={() => {handleSelect("movies")}}>Movies</button>
         </li>
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("movies")}}>Movies</button>
+            <button className={`nav-link ${activeTab === "showtimes" ? "active" : ""}`}onClick={() => {handleSelect("showtimes")}}>Showtimes</button>
         </li>
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("genres")}}>Genres</button>
+            <button className={`nav-link ${activeTab === "screens" ? "active" : ""}`}onClick={() => {handleSelect("screens")}}>Screens</button>
         </li>
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("showtimes")}}>Showtimes</button>
+            <button className={`nav-link ${activeTab === "theatres" ? "active" : ""}`}onClick={() => {handleSelect("theatres")}}>Theatres</button>
         </li>
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("screens")}}>Screens</button>
+            <button className={`nav-link ${activeTab === "locations" ? "active" : ""}`}onClick={() => {handleSelect("locations")}}>Locations</button>
         </li>
         <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("theatres")}}>Theatres</button>
-        </li>
-        <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("locations")}}>Locations</button>
-        </li>
-        <li class="nav-item">
-            <button className="nav-link" onClick={() => {handleSelect("users")}}>Users</button>
+            <button className={`nav-link ${activeTab === "users" ? "active" : ""}`}onClick={() => {handleSelect("users")}}>Users</button>
         </li>
         </ul>
     </div>

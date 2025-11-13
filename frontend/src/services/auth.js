@@ -1,3 +1,4 @@
+import { data } from "react-router";
 import config from "../config.json"
 import http from './service';
 import { getUserInfo } from './userService';
@@ -26,6 +27,7 @@ export const getCurrentUser = async () => {
     try {
     const token = localStorage.getItem(tokenKey)
     const {data: user} = await getUserInfo(token)
+    console.log(user)
     return user
     } catch (ex) {
         return null

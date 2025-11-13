@@ -1,5 +1,5 @@
 -- name: CreateTheater :one
-INSERT INTO theaters (name, location)
+INSERT INTO theaters (theatre_name, location)
 VALUES ($1, $2)
 RETURNING *;
 
@@ -11,7 +11,7 @@ SELECT * FROM theaters ORDER BY id;
 
 -- name: UpdateTheater :one
 UPDATE theaters
-SET name = $2, location = $3, updated_at = now()
+SET theatre_name = $2, location = $3, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

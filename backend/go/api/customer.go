@@ -8,13 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type CustomerReq struct {
+	Name  string `json:"name" binding:"required"`
+	Phone string `json:"phone" binding:"required"`
+}
+
 func (s *Server) CreateCustomer(ctx *gin.Context) {
-	var req db.CreateCustomerParams
+	var req CustomerReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	customer, err := s.store.CreateCustomer(ctx, req)
+	customer, err := s.store.CreateCustomer(ctx, db.CreateCustomerParams{
+		Name:  req.Name,
+		Phone: req.Phone,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

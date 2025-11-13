@@ -31,3 +31,10 @@ export const updateLocation = async (obj) => {
   const response = await http.put(updateEndpoint, obj);
   return response.data;
 }
+
+export const getTheatersByLocId = async (obj) => {
+  const getEndpoint = LocationsDashboardEndpoint + '/' + obj.id + '/theaters'
+  console.log(getEndpoint)
+  const response = await http.get(getEndpoint);
+  return response.data
+}

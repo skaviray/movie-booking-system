@@ -1,6 +1,9 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,8 +26,8 @@ func (s *Server) CreateTheater(ctx *gin.Context) {
 		return
 	}
 	args := db.CreateTheaterParams{
-		Name:     req.Name,
-		Location: req.Location,
+		TheatreName: req.Name,
+		Location:    req.Location,
 		// Rows:    req.Rows,
 		// Columns: req.Columns,
 	}
@@ -72,9 +75,9 @@ func (s *Server) UpdateTheater(ctx *gin.Context) {
 		return
 	}
 	args := db.UpdateTheaterParams{
-		ID:       int64(id),
-		Name:     req.Name,
-		Location: req.Location,
+		ID:          int64(id),
+		TheatreName: req.Name,
+		Location:    req.Location,
 	}
 	theater, err := s.store.UpdateTheater(ctx, args)
 	if err != nil {
@@ -89,6 +92,17 @@ func (s *Server) DeleteTheater(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid theater id"})
 		return
+	}
+	_, err = s.store.GetTheater(ctx, int64(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			message := fmt.Sprintf("unable to find the theater %d", int64(id))
+			ctx.JSON(http.StatusNotFound, gin.H{"error": message})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 	if err := s.store.DeleteTheater(ctx, int64(id)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

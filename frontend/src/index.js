@@ -11,12 +11,20 @@ import "react-datepicker/dist/react-datepicker.css"
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'font-awesome/css/font-awesome.css'
+import {Elements} from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js';
 // import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-
+import CartContextProvider from './movies/context/cartContext';
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY)
+console.log(process.env.REACT_APP_PUBLISHABLE_KEY)
 root.render(
     <BrowserRouter>
-      <App />
+    <CartContextProvider>
+        <Elements stripe={stripePromise}>
+            <App />
+        </Elements>
+    </CartContextProvider>
     </BrowserRouter>
 );
 

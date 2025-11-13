@@ -1,6 +1,9 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,10 +13,8 @@ import (
 )
 
 type createSeatRequest struct {
-	ScreenId int32  `json:"screen_id" binding:"required"`
-	Row      int32  `json:"row" binding:"required"`
-	Col      int32  `json:"col" binding:"required"`
-	Status   string `json:"status" binding:"required"` // available, reserved, booked
+	ScreenId int64  `json:"screen_id" binding:"required"`
+	SeatName string `json:"row" binding:"required"`
 }
 
 type UpdateSeatReq struct {
@@ -28,9 +29,7 @@ func (s *Server) CreateSeat(ctx *gin.Context) {
 	}
 	args := db.CreateSeatParams{
 		ScreenID: req.ScreenId,
-		Row:      req.Row,
-		Col:      req.Col,
-		Status:   req.Status,
+		SeatName: req.SeatName,
 	}
 	seat, err := s.store.CreateSeat(ctx, args)
 	if err != nil {
@@ -54,41 +53,29 @@ func (s *Server) GetSeat(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seat)
 }
 
-func (s *Server) UpdateSeatStatus(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid seat id"})
-		return
+func (s *Server) GetAvailableSeatsByShowTimeId(ctx *gin.Context) {
+	var uri struct {
+		Id int64 `uri:"id" binding:"required"`
 	}
-
-	var req struct {
-		Status string `json:"status" binding:"required"` // available, reserved, booked
-	}
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindUri(&uri); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	args := db.UpdateSeatStatusParams{
-		ID:     int64(id),
-		Status: req.Status,
+	_, err := s.store.GetShowtime(ctx, uri.Id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			message := fmt.Sprintf("unable to find the movie with id %d", uri.Id)
+			ctx.JSON(http.StatusNotFound, gin.H{"error": message})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
-	seat, err := s.store.UpdateSeatStatus(ctx, args)
+	seats, err := s.store.GetAvailableSeatsByShowTimeId(ctx, uri.Id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, seat)
-}
-
-func (s *Server) DeleteSeat(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid seat id"})
-		return
-	}
-	if err := s.store.DeleteSeat(ctx, int64(id)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "seat deleted"})
+	ctx.JSON(http.StatusOK, seats)
 }

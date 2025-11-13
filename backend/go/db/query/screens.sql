@@ -1,5 +1,5 @@
 -- name: CreateScreen :one
-INSERT INTO screens (theater_id, name, rows, cols)
+INSERT INTO screens (theater_id, name, rows, columns)
 VALUES ($1, $2, $3,$4)
 RETURNING *;
 

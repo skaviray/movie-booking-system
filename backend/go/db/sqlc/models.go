@@ -5,96 +5,107 @@
 package db
 
 import (
-	"time"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Customer struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name"`
-	IsGold    bool      `json:"is_gold"`
-	Phone     string    `json:"phone"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+type BookedSeat struct {
+	ID         int64   `json:"id"`
+	BookingID  int64   `json:"booking_id"`
+	ShowTimeID int64   `json:"show_time_id"`
+	SeatID     int64   `json:"seat_id"`
+	Price      float64 `json:"price"`
 }
 
-type Genre struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+type Booking struct {
+	ID         int64              `json:"id"`
+	ShowtimeID int64              `json:"showtime_id"`
+	CustomerID int64              `json:"customer_id"`
+	OrderID    string             `json:"order_id"`
+	PaymentID  pgtype.Text        `json:"payment_id"`
+	Amount     float64            `json:"amount"`
+	Currency   pgtype.Text        `json:"currency"`
+	Status     pgtype.Text        `json:"status"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Customer struct {
+	ID        int64            `json:"id"`
+	Name      string           `json:"name"`
+	IsGold    bool             `json:"is_gold"`
+	Phone     string           `json:"phone"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Location struct {
-	ID        int64     `json:"id"`
-	City      string    `json:"city"`
-	State     string    `json:"state"`
-	Country   string    `json:"country"`
-	Address   string    `json:"address"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           int64            `json:"id"`
+	LocationName string           `json:"location_name"`
+	City         string           `json:"city"`
+	Address      string           `json:"address"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 type Movie struct {
-	ID              int64     `json:"id"`
-	Title           string    `json:"title"`
-	Description     string    `json:"description"`
-	Poster          string    `json:"poster"`
-	Likes           int32     `json:"likes"`
-	Trailer         string    `json:"trailer"`
-	DurationMinutes int32     `json:"duration_minutes"`
-	Language        string    `json:"language"`
-	GenreID         int32     `json:"genre_id"`
-	ReleaseDate     time.Time `json:"release_date"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	ID          int64            `json:"id"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	Poster      string           `json:"poster"`
+	Likes       int32            `json:"likes"`
+	Trailer     string           `json:"trailer"`
+	Runtime     int64            `json:"runtime"`
+	Language    string           `json:"language"`
+	ReleaseDate pgtype.Date      `json:"release_date"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 }
 
 type Screen struct {
-	ID        int64     `json:"id"`
-	TheaterID int32     `json:"theater_id"`
-	Name      string    `json:"name"`
-	Rows      int32     `json:"rows"`
-	Cols      int32     `json:"cols"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64            `json:"id"`
+	TheaterID int64            `json:"theater_id"`
+	Name      string           `json:"name"`
+	Rows      int32            `json:"rows"`
+	Columns   int32            `json:"columns"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Seat struct {
-	ID        int64     `json:"id"`
-	ScreenID  int32     `json:"screen_id"`
-	Row       int32     `json:"row"`
-	Col       int32     `json:"col"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64              `json:"id"`
+	ScreenID  int64              `json:"screen_id"`
+	SeatName  string             `json:"seat_name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Showtime struct {
-	ID        int64     `json:"id"`
-	MovieID   int32     `json:"movie_id"`
-	ScreenID  int32     `json:"screen_id"`
-	StartTime time.Time `json:"start_time"`
-	Price     float64   `json:"price"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64            `json:"id"`
+	ScreenID  int64            `json:"screen_id"`
+	MovieID   int64            `json:"movie_id"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Price     float64          `json:"price"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Theater struct {
-	ID        int64     `json:"id"`
-	Name      string    `json:"name"`
-	Location  int32     `json:"location"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          int64            `json:"id"`
+	TheatreName string           `json:"theatre_name"`
+	Location    int32            `json:"location"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 }
 
 type User struct {
-	ID                int64     `json:"id"`
-	Username          string    `json:"username"`
-	HashedPassword    string    `json:"hashed_password"`
-	Email             string    `json:"email"`
-	FullName          string    `json:"full_name"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	IsAdmin           bool      `json:"is_admin"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                int64              `json:"id"`
+	Username          string             `json:"username"`
+	HashedPassword    string             `json:"hashed_password"`
+	Email             string             `json:"email"`
+	FullName          string             `json:"full_name"`
+	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
+	IsAdmin           bool               `json:"is_admin"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 }

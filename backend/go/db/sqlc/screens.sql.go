@@ -10,24 +10,24 @@ import (
 )
 
 const createScreen = `-- name: CreateScreen :one
-INSERT INTO screens (theater_id, name, rows, cols)
+INSERT INTO screens (theater_id, name, rows, columns)
 VALUES ($1, $2, $3,$4)
-RETURNING id, theater_id, name, rows, cols, created_at, updated_at
+RETURNING id, theater_id, name, rows, columns, created_at, updated_at
 `
 
 type CreateScreenParams struct {
-	TheaterID int32  `json:"theater_id"`
+	TheaterID int64  `json:"theater_id"`
 	Name      string `json:"name"`
 	Rows      int32  `json:"rows"`
-	Cols      int32  `json:"cols"`
+	Columns   int32  `json:"columns"`
 }
 
 func (q *Queries) CreateScreen(ctx context.Context, arg CreateScreenParams) (Screen, error) {
-	row := q.db.QueryRowContext(ctx, createScreen,
+	row := q.db.QueryRow(ctx, createScreen,
 		arg.TheaterID,
 		arg.Name,
 		arg.Rows,
-		arg.Cols,
+		arg.Columns,
 	)
 	var i Screen
 	err := row.Scan(
@@ -35,7 +35,7 @@ func (q *Queries) CreateScreen(ctx context.Context, arg CreateScreenParams) (Scr
 		&i.TheaterID,
 		&i.Name,
 		&i.Rows,
-		&i.Cols,
+		&i.Columns,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -47,23 +47,23 @@ DELETE FROM screens WHERE id = $1
 `
 
 func (q *Queries) DeleteScreen(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteScreen, id)
+	_, err := q.db.Exec(ctx, deleteScreen, id)
 	return err
 }
 
 const getScreen = `-- name: GetScreen :one
-SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens WHERE id = $1
+SELECT id, theater_id, name, rows, columns, created_at, updated_at FROM screens WHERE id = $1
 `
 
 func (q *Queries) GetScreen(ctx context.Context, id int64) (Screen, error) {
-	row := q.db.QueryRowContext(ctx, getScreen, id)
+	row := q.db.QueryRow(ctx, getScreen, id)
 	var i Screen
 	err := row.Scan(
 		&i.ID,
 		&i.TheaterID,
 		&i.Name,
 		&i.Rows,
-		&i.Cols,
+		&i.Columns,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -71,11 +71,11 @@ func (q *Queries) GetScreen(ctx context.Context, id int64) (Screen, error) {
 }
 
 const listScreens = `-- name: ListScreens :many
-SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens ORDER BY id
+SELECT id, theater_id, name, rows, columns, created_at, updated_at FROM screens ORDER BY id
 `
 
 func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
-	rows, err := q.db.QueryContext(ctx, listScreens)
+	rows, err := q.db.Query(ctx, listScreens)
 	if err != nil {
 		return nil, err
 	}
@@ -88,16 +88,13 @@ func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
 			&i.TheaterID,
 			&i.Name,
 			&i.Rows,
-			&i.Cols,
+			&i.Columns,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -106,11 +103,11 @@ func (q *Queries) ListScreens(ctx context.Context) ([]Screen, error) {
 }
 
 const listScreensByTheater = `-- name: ListScreensByTheater :many
-SELECT id, theater_id, name, rows, cols, created_at, updated_at FROM screens WHERE theater_id = $1
+SELECT id, theater_id, name, rows, columns, created_at, updated_at FROM screens WHERE theater_id = $1
 `
 
-func (q *Queries) ListScreensByTheater(ctx context.Context, theaterID int32) ([]Screen, error) {
-	rows, err := q.db.QueryContext(ctx, listScreensByTheater, theaterID)
+func (q *Queries) ListScreensByTheater(ctx context.Context, theaterID int64) ([]Screen, error) {
+	rows, err := q.db.Query(ctx, listScreensByTheater, theaterID)
 	if err != nil {
 		return nil, err
 	}
@@ -123,16 +120,13 @@ func (q *Queries) ListScreensByTheater(ctx context.Context, theaterID int32) ([]
 			&i.TheaterID,
 			&i.Name,
 			&i.Rows,
-			&i.Cols,
+			&i.Columns,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -144,7 +138,7 @@ const updateScreen = `-- name: UpdateScreen :one
 UPDATE screens
 SET name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, theater_id, name, rows, cols, created_at, updated_at
+RETURNING id, theater_id, name, rows, columns, created_at, updated_at
 `
 
 type UpdateScreenParams struct {
@@ -153,14 +147,14 @@ type UpdateScreenParams struct {
 }
 
 func (q *Queries) UpdateScreen(ctx context.Context, arg UpdateScreenParams) (Screen, error) {
-	row := q.db.QueryRowContext(ctx, updateScreen, arg.ID, arg.Name)
+	row := q.db.QueryRow(ctx, updateScreen, arg.ID, arg.Name)
 	var i Screen
 	err := row.Scan(
 		&i.ID,
 		&i.TheaterID,
 		&i.Name,
 		&i.Rows,
-		&i.Cols,
+		&i.Columns,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

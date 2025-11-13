@@ -85,3 +85,52 @@ make create-container-image
 ```bash
 docker-compose up -d
 ```
+
+```bash
+echo 'export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"' >> /Users/skaviray/.zshrc
+export LDFLAGS="-L/opt/homebrew/opt/postgresql@15/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/postgresql@15/include"
+psql -h localhost -p 5434 -U root -d vividly  --password admin -f sample_data.sql
+```
+
+```bash
+BEGIN;
+
+-- 1. Check seat availability
+SELECT status FROM seats WHERE id = $1 AND status = 'available' FOR UPDATE;
+
+-- 2. Create booking
+INSERT INTO bookings (...) VALUES (...) RETURNING id;
+
+-- 3. Add seat mapping
+INSERT INTO booked_seats (booking_id, seat_id, price) VALUES ($booking_id, $seat_id, $price);
+
+-- 4. Update seat status
+UPDATE seats SET status = 'booked', updated_at = NOW() WHERE id = $seat_id;
+
+COMMIT;
+
+```
+
+```bash
+movies:
+```
+
+create-order ---> calls the razorpayid
+
+:input :input
+showtimeid amount, currency,
+seatids. orderreciept(showtime-id-customer-id)
+customerid :otuput
+amount order_id,amount, currency
+
+verify-payment -------> verify backend
+:input                   
+order_id
+payment_id
+razorpay_payment_id
+razorpay_signature
+showtime_id
+amount
+seat_ids
+customer_id

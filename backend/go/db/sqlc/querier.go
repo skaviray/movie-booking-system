@@ -9,8 +9,10 @@ import (
 )
 
 type Querier interface {
+	CreateBookedSeat(ctx context.Context, arg CreateBookedSeatParams) (BookedSeat, error)
+	CreateBookedSeatsBatch(ctx context.Context, arg []CreateBookedSeatsBatchParams) (int64, error)
+	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
-	CreateGenre(ctx context.Context, name string) (Genre, error)
 	CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error)
 	CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error)
 	CreateScreen(ctx context.Context, arg CreateScreenParams) (Screen, error)
@@ -19,42 +21,49 @@ type Querier interface {
 	CreateTheater(ctx context.Context, arg CreateTheaterParams) (Theater, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteCustomer(ctx context.Context, id int64) error
-	DeleteGenre(ctx context.Context, id int64) error
 	DeleteLocation(ctx context.Context, id int64) error
 	DeleteMovie(ctx context.Context, id int64) error
 	DeleteScreen(ctx context.Context, id int64) error
-	DeleteSeat(ctx context.Context, id int64) error
 	DeleteShowtime(ctx context.Context, id int64) error
 	DeleteTheater(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	GetAvailableSeatsByShowTimeId(ctx context.Context, id int64) ([]GetAvailableSeatsByShowTimeIdRow, error)
+	GetBookedSeat(ctx context.Context, id int64) (BookedSeat, error)
+	GetBookingById(ctx context.Context, id int64) (Booking, error)
+	// -- name: ListBookings :many
+	// SELECT * FROM bookings
+	// ORDER BY updated_at DESC
+	// LIMIT $1 OFFSET $2;
+	GetBookingsByShowtime(ctx context.Context, showtimeID int64) ([]Booking, error)
 	GetCustomer(ctx context.Context, id int64) (Customer, error)
-	GetGenre(ctx context.Context, id int64) (Genre, error)
 	GetLocation(ctx context.Context, id int64) (Location, error)
 	GetMovie(ctx context.Context, id int64) (Movie, error)
 	GetScreen(ctx context.Context, id int64) (Screen, error)
 	GetSeat(ctx context.Context, id int64) (Seat, error)
+	GetSeatsByShowTimeIdAndSeatIds(ctx context.Context, arg GetSeatsByShowTimeIdAndSeatIdsParams) ([]GetSeatsByShowTimeIdAndSeatIdsRow, error)
+	GetSeatsByShowTimeIdAndSeatIdsForUpdate(ctx context.Context, arg GetSeatsByShowTimeIdAndSeatIdsForUpdateParams) ([]GetSeatsByShowTimeIdAndSeatIdsForUpdateRow, error)
 	GetShowtime(ctx context.Context, id int64) (Showtime, error)
+	GetShowtimesByMovieID(ctx context.Context, movieID int64) ([]GetShowtimesByMovieIDRow, error)
 	GetTheater(ctx context.Context, id int64) (Theater, error)
-	GetTheatersAndShowtimesByMovie(ctx context.Context, movieID int32) ([]GetTheatersAndShowtimesByMovieRow, error)
+	GetTheatersByLocation(ctx context.Context, id int64) ([]GetTheatersByLocationRow, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListCustomers(ctx context.Context) ([]Customer, error)
-	ListGenres(ctx context.Context) ([]Genre, error)
 	ListLocations(ctx context.Context) ([]Location, error)
 	ListMovies(ctx context.Context) ([]Movie, error)
 	ListScreens(ctx context.Context) ([]Screen, error)
-	ListScreensByTheater(ctx context.Context, theaterID int32) ([]Screen, error)
-	ListSeatsByScreen(ctx context.Context, screenID int32) ([]Seat, error)
+	ListScreensByTheater(ctx context.Context, theaterID int64) ([]Screen, error)
+	ListSeatsByScreen(ctx context.Context, screenID int64) ([]Seat, error)
 	ListShowtimes(ctx context.Context) ([]Showtime, error)
+	ListShowtimesByMovieId(ctx context.Context, movieID int64) ([]Showtime, error)
 	ListTheaters(ctx context.Context) ([]Theater, error)
 	ListUsers(ctx context.Context) ([]User, error)
+	UpdateBookingStatus(ctx context.Context, arg UpdateBookingStatusParams) (Booking, error)
 	// LIMIT $1 OFFSET $2;
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error)
-	UpdateGenre(ctx context.Context, arg UpdateGenreParams) (Genre, error)
 	UpdateLocation(ctx context.Context, arg UpdateLocationParams) (Location, error)
 	UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error)
 	UpdateScreen(ctx context.Context, arg UpdateScreenParams) (Screen, error)
-	UpdateSeatStatus(ctx context.Context, arg UpdateSeatStatusParams) (Seat, error)
 	UpdateShowtime(ctx context.Context, arg UpdateShowtimeParams) (Showtime, error)
 	UpdateTheater(ctx context.Context, arg UpdateTheaterParams) (Theater, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)

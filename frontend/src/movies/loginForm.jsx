@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import Input from './common/input'
 import Joi, { schema }  from 'joi-browser'
-import auth from '../services/auth'
 import { useNavigate, useLocation, redirect } from 'react-router'
 
-
+import auth from '../services/auth'
 export default function LoginForm({handleUserState}) {
     const navigate = useNavigate()
     const location = useLocation()

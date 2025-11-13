@@ -10,31 +10,24 @@ import (
 )
 
 const createLocation = `-- name: CreateLocation :one
-INSERT INTO locations (city, state, country, address)
-VALUES ($1, $2, $3, $4)
-RETURNING id, city, state, country, address, created_at, updated_at
+INSERT INTO locations (location_name,city, address)
+VALUES ($1, $2,$3)
+RETURNING id, location_name, city, address, created_at, updated_at
 `
 
 type CreateLocationParams struct {
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
-	Address string `json:"address"`
+	LocationName string `json:"location_name"`
+	City         string `json:"city"`
+	Address      string `json:"address"`
 }
 
 func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error) {
-	row := q.db.QueryRowContext(ctx, createLocation,
-		arg.City,
-		arg.State,
-		arg.Country,
-		arg.Address,
-	)
+	row := q.db.QueryRow(ctx, createLocation, arg.LocationName, arg.City, arg.Address)
 	var i Location
 	err := row.Scan(
 		&i.ID,
+		&i.LocationName,
 		&i.City,
-		&i.State,
-		&i.Country,
 		&i.Address,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -47,22 +40,21 @@ DELETE FROM locations WHERE id = $1
 `
 
 func (q *Queries) DeleteLocation(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteLocation, id)
+	_, err := q.db.Exec(ctx, deleteLocation, id)
 	return err
 }
 
 const getLocation = `-- name: GetLocation :one
-SELECT id, city, state, country, address, created_at, updated_at FROM locations WHERE id = $1
+SELECT id, location_name, city, address, created_at, updated_at FROM locations WHERE id = $1
 `
 
 func (q *Queries) GetLocation(ctx context.Context, id int64) (Location, error) {
-	row := q.db.QueryRowContext(ctx, getLocation, id)
+	row := q.db.QueryRow(ctx, getLocation, id)
 	var i Location
 	err := row.Scan(
 		&i.ID,
+		&i.LocationName,
 		&i.City,
-		&i.State,
-		&i.Country,
 		&i.Address,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -70,12 +62,46 @@ func (q *Queries) GetLocation(ctx context.Context, id int64) (Location, error) {
 	return i, err
 }
 
+const getTheatersByLocation = `-- name: GetTheatersByLocation :many
+SELECT 
+    t.id AS theater_id,
+    t.theatre_name AS theater_name
+FROM theaters t
+JOIN locations l ON t.location = l.id
+WHERE l.id = $1
+`
+
+type GetTheatersByLocationRow struct {
+	TheaterID   int64  `json:"theater_id"`
+	TheaterName string `json:"theater_name"`
+}
+
+func (q *Queries) GetTheatersByLocation(ctx context.Context, id int64) ([]GetTheatersByLocationRow, error) {
+	rows, err := q.db.Query(ctx, getTheatersByLocation, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTheatersByLocationRow{}
+	for rows.Next() {
+		var i GetTheatersByLocationRow
+		if err := rows.Scan(&i.TheaterID, &i.TheaterName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLocations = `-- name: ListLocations :many
-SELECT id, city, state, country, address, created_at, updated_at FROM locations ORDER BY id
+SELECT id, location_name, city, address, created_at, updated_at FROM locations ORDER BY id
 `
 
 func (q *Queries) ListLocations(ctx context.Context) ([]Location, error) {
-	rows, err := q.db.QueryContext(ctx, listLocations)
+	rows, err := q.db.Query(ctx, listLocations)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +111,8 @@ func (q *Queries) ListLocations(ctx context.Context) ([]Location, error) {
 		var i Location
 		if err := rows.Scan(
 			&i.ID,
+			&i.LocationName,
 			&i.City,
-			&i.State,
-			&i.Country,
 			&i.Address,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -95,9 +120,6 @@ func (q *Queries) ListLocations(ctx context.Context) ([]Location, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -107,33 +129,24 @@ func (q *Queries) ListLocations(ctx context.Context) ([]Location, error) {
 
 const updateLocation = `-- name: UpdateLocation :one
 UPDATE locations
-SET city = $2, state = $3, country = $4, address = $5, updated_at = now()
+SET city = $2, address = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, city, state, country, address, created_at, updated_at
+RETURNING id, location_name, city, address, created_at, updated_at
 `
 
 type UpdateLocationParams struct {
 	ID      int64  `json:"id"`
 	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
 	Address string `json:"address"`
 }
 
 func (q *Queries) UpdateLocation(ctx context.Context, arg UpdateLocationParams) (Location, error) {
-	row := q.db.QueryRowContext(ctx, updateLocation,
-		arg.ID,
-		arg.City,
-		arg.State,
-		arg.Country,
-		arg.Address,
-	)
+	row := q.db.QueryRow(ctx, updateLocation, arg.ID, arg.City, arg.Address)
 	var i Location
 	err := row.Scan(
 		&i.ID,
+		&i.LocationName,
 		&i.City,
-		&i.State,
-		&i.Country,
 		&i.Address,
 		&i.CreatedAt,
 		&i.UpdatedAt,

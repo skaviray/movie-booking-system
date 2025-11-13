@@ -10,72 +10,201 @@ import (
 )
 
 const createSeat = `-- name: CreateSeat :one
-INSERT INTO seats (screen_id, row, col, status)
-VALUES ($1, $2, $3, $4)
-RETURNING id, screen_id, row, col, status, created_at, updated_at
+INSERT INTO seats (seat_name, screen_id)
+VALUES ($1, $2)
+RETURNING id, screen_id, seat_name, created_at, updated_at
 `
 
 type CreateSeatParams struct {
-	ScreenID int32  `json:"screen_id"`
-	Row      int32  `json:"row"`
-	Col      int32  `json:"col"`
-	Status   string `json:"status"`
+	SeatName string `json:"seat_name"`
+	ScreenID int64  `json:"screen_id"`
 }
 
 func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error) {
-	row := q.db.QueryRowContext(ctx, createSeat,
-		arg.ScreenID,
-		arg.Row,
-		arg.Col,
-		arg.Status,
-	)
+	row := q.db.QueryRow(ctx, createSeat, arg.SeatName, arg.ScreenID)
 	var i Seat
 	err := row.Scan(
 		&i.ID,
 		&i.ScreenID,
-		&i.Row,
-		&i.Col,
-		&i.Status,
+		&i.SeatName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const deleteSeat = `-- name: DeleteSeat :exec
-DELETE FROM seats WHERE id = $1
+const getAvailableSeatsByShowTimeId = `-- name: GetAvailableSeatsByShowTimeId :many
+SELECT
+    s.id AS seat_id,
+    s.seat_name,
+    CASE
+        WHEN bs.id IS NOT NULL THEN 'booked'
+        ELSE 'available'
+    END AS status
+FROM seats s
+JOIN screens sc
+    ON s.screen_id = sc.id
+JOIN showtimes st
+    ON sc.id = st.screen_id
+LEFT JOIN booked_seats bs
+    ON bs.seat_id = s.id
+   AND bs.show_time_id = st.id
+WHERE st.id = $1
+ORDER BY s.seat_name
 `
 
-func (q *Queries) DeleteSeat(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteSeat, id)
-	return err
+type GetAvailableSeatsByShowTimeIdRow struct {
+	SeatID   int64  `json:"seat_id"`
+	SeatName string `json:"seat_name"`
+	Status   string `json:"status"`
+}
+
+func (q *Queries) GetAvailableSeatsByShowTimeId(ctx context.Context, id int64) ([]GetAvailableSeatsByShowTimeIdRow, error) {
+	rows, err := q.db.Query(ctx, getAvailableSeatsByShowTimeId, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAvailableSeatsByShowTimeIdRow{}
+	for rows.Next() {
+		var i GetAvailableSeatsByShowTimeIdRow
+		if err := rows.Scan(&i.SeatID, &i.SeatName, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getSeat = `-- name: GetSeat :one
-SELECT id, screen_id, row, col, status, created_at, updated_at FROM seats WHERE id = $1
+SELECT id, screen_id, seat_name, created_at, updated_at FROM seats WHERE id = $1
 `
 
 func (q *Queries) GetSeat(ctx context.Context, id int64) (Seat, error) {
-	row := q.db.QueryRowContext(ctx, getSeat, id)
+	row := q.db.QueryRow(ctx, getSeat, id)
 	var i Seat
 	err := row.Scan(
 		&i.ID,
 		&i.ScreenID,
-		&i.Row,
-		&i.Col,
-		&i.Status,
+		&i.SeatName,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const listSeatsByScreen = `-- name: ListSeatsByScreen :many
-SELECT id, screen_id, row, col, status, created_at, updated_at FROM seats WHERE screen_id = $1 ORDER BY row, col
+const getSeatsByShowTimeIdAndSeatIds = `-- name: GetSeatsByShowTimeIdAndSeatIds :many
+SELECT
+    s.id AS seat_id,
+    s.seat_name,
+    CASE
+        WHEN bs.id IS NOT NULL THEN 'booked'
+        ELSE 'available'
+    END AS status
+FROM seats s
+JOIN screens sc
+    ON s.screen_id = sc.id
+JOIN showtimes st
+    ON sc.id = st.screen_id
+LEFT JOIN booked_seats bs
+    ON bs.seat_id = s.id
+   AND bs.show_time_id = st.id
+WHERE st.id = $1 AND s.id = ANY($2::bigint[])
+ORDER BY s.seat_name
 `
 
-func (q *Queries) ListSeatsByScreen(ctx context.Context, screenID int32) ([]Seat, error) {
-	rows, err := q.db.QueryContext(ctx, listSeatsByScreen, screenID)
+type GetSeatsByShowTimeIdAndSeatIdsParams struct {
+	ShowtimeID int64   `json:"showtime_id"`
+	SeatIds    []int64 `json:"seat_ids"`
+}
+
+type GetSeatsByShowTimeIdAndSeatIdsRow struct {
+	SeatID   int64  `json:"seat_id"`
+	SeatName string `json:"seat_name"`
+	Status   string `json:"status"`
+}
+
+func (q *Queries) GetSeatsByShowTimeIdAndSeatIds(ctx context.Context, arg GetSeatsByShowTimeIdAndSeatIdsParams) ([]GetSeatsByShowTimeIdAndSeatIdsRow, error) {
+	rows, err := q.db.Query(ctx, getSeatsByShowTimeIdAndSeatIds, arg.ShowtimeID, arg.SeatIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSeatsByShowTimeIdAndSeatIdsRow{}
+	for rows.Next() {
+		var i GetSeatsByShowTimeIdAndSeatIdsRow
+		if err := rows.Scan(&i.SeatID, &i.SeatName, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSeatsByShowTimeIdAndSeatIdsForUpdate = `-- name: GetSeatsByShowTimeIdAndSeatIdsForUpdate :many
+SELECT
+    s.id AS seat_id,
+    s.seat_name,
+    CASE
+        WHEN bs.id IS NOT NULL THEN 'booked'
+        ELSE 'available'
+    END AS status
+FROM seats s
+JOIN screens sc
+    ON s.screen_id = sc.id
+JOIN showtimes st
+    ON sc.id = st.screen_id
+LEFT JOIN booked_seats bs
+    ON bs.seat_id = s.id
+   AND bs.show_time_id = st.id
+WHERE st.id = $1 AND s.id = ANY($2::bigint[])
+ORDER BY s.seat_name
+FOR UPDATE OF s
+`
+
+type GetSeatsByShowTimeIdAndSeatIdsForUpdateParams struct {
+	ShowtimeID int64   `json:"showtime_id"`
+	SeatIds    []int64 `json:"seat_ids"`
+}
+
+type GetSeatsByShowTimeIdAndSeatIdsForUpdateRow struct {
+	SeatID   int64  `json:"seat_id"`
+	SeatName string `json:"seat_name"`
+	Status   string `json:"status"`
+}
+
+func (q *Queries) GetSeatsByShowTimeIdAndSeatIdsForUpdate(ctx context.Context, arg GetSeatsByShowTimeIdAndSeatIdsForUpdateParams) ([]GetSeatsByShowTimeIdAndSeatIdsForUpdateRow, error) {
+	rows, err := q.db.Query(ctx, getSeatsByShowTimeIdAndSeatIdsForUpdate, arg.ShowtimeID, arg.SeatIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSeatsByShowTimeIdAndSeatIdsForUpdateRow{}
+	for rows.Next() {
+		var i GetSeatsByShowTimeIdAndSeatIdsForUpdateRow
+		if err := rows.Scan(&i.SeatID, &i.SeatName, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSeatsByScreen = `-- name: ListSeatsByScreen :many
+SELECT id, screen_id, seat_name, created_at, updated_at FROM seats WHERE screen_id = $1
+`
+
+func (q *Queries) ListSeatsByScreen(ctx context.Context, screenID int64) ([]Seat, error) {
+	rows, err := q.db.Query(ctx, listSeatsByScreen, screenID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +215,7 @@ func (q *Queries) ListSeatsByScreen(ctx context.Context, screenID int32) ([]Seat
 		if err := rows.Scan(
 			&i.ID,
 			&i.ScreenID,
-			&i.Row,
-			&i.Col,
-			&i.Status,
+			&i.SeatName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -96,38 +223,8 @@ func (q *Queries) ListSeatsByScreen(ctx context.Context, screenID int32) ([]Seat
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateSeatStatus = `-- name: UpdateSeatStatus :one
-UPDATE seats
-SET status = $2, updated_at = now()
-WHERE id = $1
-RETURNING id, screen_id, row, col, status, created_at, updated_at
-`
-
-type UpdateSeatStatusParams struct {
-	ID     int64  `json:"id"`
-	Status string `json:"status"`
-}
-
-func (q *Queries) UpdateSeatStatus(ctx context.Context, arg UpdateSeatStatusParams) (Seat, error) {
-	row := q.db.QueryRowContext(ctx, updateSeatStatus, arg.ID, arg.Status)
-	var i Seat
-	err := row.Scan(
-		&i.ID,
-		&i.ScreenID,
-		&i.Row,
-		&i.Col,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
 }

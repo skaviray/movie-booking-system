@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getTheatersAndShowtimesByMovie = `-- name: GetTheatersAndShowtimesByMovie :many
@@ -31,16 +32,16 @@ ORDER BY
 `
 
 type GetTheatersAndShowtimesByMovieRow struct {
-	TheaterID   int64     `json:"theater_id"`
-	TheaterName string    `json:"theater_name"`
-	Location    int32     `json:"location"`
-	ScreenID    int64     `json:"screen_id"`
-	ShowtimeID  int64     `json:"showtime_id"`
-	StartTime   time.Time `json:"start_time"`
+	TheaterID   int64            `json:"theater_id"`
+	TheaterName string           `json:"theater_name"`
+	Location    int32            `json:"location"`
+	ScreenID    int64            `json:"screen_id"`
+	ShowtimeID  int64            `json:"showtime_id"`
+	StartTime   pgtype.Timestamp `json:"start_time"`
 }
 
 func (q *Queries) GetTheatersAndShowtimesByMovie(ctx context.Context, movieID int32) ([]GetTheatersAndShowtimesByMovieRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTheatersAndShowtimesByMovie, movieID)
+	rows, err := q.db.Query(ctx, getTheatersAndShowtimesByMovie, movieID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +60,6 @@ func (q *Queries) GetTheatersAndShowtimesByMovie(ctx context.Context, movieID in
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
